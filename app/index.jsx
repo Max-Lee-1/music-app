@@ -1,18 +1,64 @@
+import React, { useState } from 'react';
 import { StatusBar } from "expo-status-bar";
-import { ImageBackground, Text, View } from "react-native";
+import { ImageBackground, Text, View, Image, Link, TouchableOpacity } from "react-native";
 import "../constants/styles.css";
 import gradientDemo from "../assets/images/gradient-demo.png";
+import Setting from "../assets/icons_ver_1_png/setting.png"
+import List from "../assets/icons_ver_1_png/List.png"
+import Shuffle from "../assets/icons_ver_1_png/Shuffle.png";
+import Arrow from "../assets/icons_ver_1_png/Arrows.png";
+import Pause from "../assets/icons_ver_1_png/Pause.png";
+import Loop from "../assets/icons_ver_1_png/Loop.png";
+import SearchModal from './search.jsx';
+import UserModal from './user.jsx';
+
 
 export default function App() {
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
+  const [userModalVisible, setUserModalVisible] = useState(false);
+
+
   return (
-    <ImageBackground
-      source={gradientDemo}
-      style={{ width: '100%', height: '100%' }}
-      resizeMode='cover'
-    >
-      <View className="w-screen h-screen">
-        
-      </View>
-    </ImageBackground>
+    <>
+      <StatusBar style="auto" />
+      <ImageBackground
+        source={gradientDemo}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode='cover'
+      >
+        <View className="flex-1 w-full pt-[5vh] px-[4vw]">
+          <View className="flex-row items-start justify-between">
+            <TouchableOpacity onPress={() => setUserModalVisible(true)}>
+              <Image source={Setting} className="" style={{ width: '2rem', height: '2rem' }} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSearchModalVisible(true)}>
+              <Image source={List} className="" style={{ width: '2rem', height: '2rem' }} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
+          <View className="flex-row items-start justify-between">
+            <Image source={Shuffle} className="mr-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+            <Image source={Arrow} className="mx-3 rotate-180" style={{ width: '1.75rem', height: '1.75rem' }} />
+            <Image source={Pause} className="mx-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+            <Image source={Arrow} className="mx-3 " style={{ width: '1.75rem', height: '1.75rem' }} />
+            <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+          </View>
+        </View>
+
+        <View className="">
+          <Image source={""} className=""></Image>
+        </View>
+
+
+
+      </ImageBackground>
+      <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />
+      <UserModal visible={userModalVisible} onClose={() => setUserModalVisible(false)} />
+
+
+    </>
+
   );
 }

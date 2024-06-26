@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StatusBar } from "expo-status-bar";
-import { ImageBackground, Text, View, Image, Link, TouchableOpacity } from "react-native";
+import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
+import { Link } from "expo-router";
 import "../constants/styles.css";
 import gradientDemo from "../assets/images/gradient-demo.png";
 import Setting from "../assets/icons_ver_1_png/setting.png"
@@ -46,12 +47,6 @@ export default function App() {
             <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
           </View>
         </View>
-
-        <View className="">
-          <Image source={""} className=""></Image>
-        </View>
-
-
 
       </ImageBackground>
       <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />

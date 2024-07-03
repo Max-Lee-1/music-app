@@ -16,7 +16,7 @@
     "axios": "^1.7.2",
     "emitter": "^0.0.2",
     "expo": "^51.0.14",
-    "expo-app-auth": "~11.1.0",
+    "expo-app-auth": "11.1.0",
     "expo-auth-session": "~5.5.2",
     "expo-constants": "~16.0.2",
     "expo-linking": "~6.3.1",

@@ -10,6 +10,8 @@ import * as WebBrowser from 'expo-web-browser';
 import axios from 'axios';
 import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-session';
 import * as Random from 'expo-random';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // ensures  any open web browser session is properly closed 
 // and that the authentication flow is completed correctly when the user is redirected back to the app.
@@ -20,6 +22,20 @@ const redirectUri = "http://localhost:8081/spotify-auth-callback";
 console.log('Redirect URI:', redirectUri);
 const scopes = ['user-read-private', 'user-read-email'];
 //const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
+//const config = {
+//  clientId: clientId,
+//  scopes: [
+//    'user-read-email',
+//    'user-library-read',
+//    'user-read-recently-played',
+//    'user-top-read',
+//    'playlist-read-private',
+//    'playlist-read-collaborative',
+//    'playlist-modify-public'
+//  ],
+//  redirectUri: "http://localhost:8081/spotify-auth-callback", 
+//}
+
 
 // object define the authorization and token endpoints for the OAuth 2.0 flow
 const discovery = {
@@ -63,6 +79,7 @@ export default function LoginScreen() {
         discovery
       );
       setToken(tokenResult.accessToken);
+      await AsyncStorage.setItem('token', tokenResult.accessToken);
       await fetchUserData(tokenResult.accessToken);
       // Navigate to the index page after successful authentication
       router.replace('/');
@@ -85,10 +102,6 @@ export default function LoginScreen() {
       console.error('Error fetching user data:', error);
     }
   }
-
-  //<Link href="/">
-  //<Pressable className="items-center justify-center text-lg font-bold text-center text-white">Login</Pressable>
-  //</Link>
 
   return (
     <>

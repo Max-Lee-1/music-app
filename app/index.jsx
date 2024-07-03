@@ -20,25 +20,48 @@ export default function App() {
   const [userProfile, setUserProfile] = useState();
 
   const getProfile = async () => {
-    const accessToken = await AsyncStorage.getItem("token");
     try {
+      const accessToken = await AsyncStorage.getItem("token");
+      if (!accessToken) {
+        console.log("No access token found");
+        return;
+      }
+
       const response = await fetch("https://api.spotify.com/v1/me", {
         headers: {
-          Authorization: 'Bearer ' + accessToken
+          Authorization: `Bearer ${accessToken}`
         }
-      })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       setUserProfile(data);
-      return (data);
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
+      console.log("User profile fetched:", data);
+    } catch (err) {
+      console.error("Error fetching profile:", err.message);
     }
-    catch (error) {
-      console.log(error.message)
-    }
-  }
+  };
 
   useEffect(() => {
-    getProfile()
-  }, [])
+    const loadProfileData = async () => {
+      try {
+        const storedUserData = await AsyncStorage.getItem("userData");
+        if (storedUserData) {
+          setUserProfile(JSON.parse(storedUserData));
+        } else {
+          await getProfile();
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      }
+    };
+    loadProfileData();
+  }, []);
+
 
   return (
     <>
@@ -48,10 +71,20 @@ export default function App() {
         style={{ width: '100%', height: '100%' }}
         resizeMode='cover'
       >
+
         <View className="flex-1 w-full pt-[5vh] px-[4vw]">
           <View className="flex-row items-start justify-between">
             <TouchableOpacity onPress={() => setUserModalVisible(true)}>
-              <Image source={{}} className="" style={{ width: '2rem', height: '2rem' }} />
+
+              {userProfile && userProfile.images && userProfile.images[0] ? (
+                <Image
+                  source={{ uri: userProfile.images[0].url }}
+                  className=""
+                  style={{ width: 32, height: 32, borderRadius: 16 }}
+                />
+              ) : (
+                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} />
+              )}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setSearchModalVisible(true)}>
               <Image source={List} className="" style={{ width: '2rem', height: '2rem' }} />

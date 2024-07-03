@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
@@ -12,12 +12,33 @@ import Pause from "../assets/icons_ver_1_png/Pause.png";
 import Loop from "../assets/icons_ver_1_png/Loop.png";
 import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
-
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
+  const [userProfile, setUserProfile] = useState();
 
+  const getProfile = async () => {
+    const accessToken = await AsyncStorage.getItem("token");
+    try {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+          Authorization: 'Bearer ' + accessToken
+        }
+      })
+      const data = await response.json();
+      setUserProfile(data);
+      return (data);
+    }
+    catch (error) {
+      console.log(error.message)
+    }
+  }
+
+  useEffect(() => {
+    getProfile()
+  }, [])
 
   return (
     <>
@@ -30,7 +51,7 @@ export default function App() {
         <View className="flex-1 w-full pt-[5vh] px-[4vw]">
           <View className="flex-row items-start justify-between">
             <TouchableOpacity onPress={() => setUserModalVisible(true)}>
-              <Image source={Setting} className="" style={{ width: '2rem', height: '2rem' }} />
+              <Image source={{}} className="" style={{ width: '2rem', height: '2rem' }} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setSearchModalVisible(true)}>
               <Image source={List} className="" style={{ width: '2rem', height: '2rem' }} />
@@ -54,6 +75,5 @@ export default function App() {
 
 
     </>
-
   );
 }

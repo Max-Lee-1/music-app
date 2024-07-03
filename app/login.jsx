@@ -2,13 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import "../constants/styles.css";
 import { View, Text, Button, ImageBackground, Pressable } from 'react-native';
-import { StatusBar, Link, Redirect } from "expo-router";
+import { StatusBar, Link, Redirect, router } from "expo-router";
 import gradientDemo from "../assets/images/gradient-demo.png";
 import * as AuthSession from 'expo-auth-session';
 import * as AppAuth from "expo-app-auth";
 import * as WebBrowser from 'expo-web-browser';
 import axios from 'axios';
-
 import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-session';
 import * as Random from 'expo-random';
 
@@ -20,7 +19,6 @@ const clientId = '990510f4dd5f44e399690dfcde5b5828';
 const redirectUri = "http://localhost:8081/spotify-auth-callback";
 console.log('Redirect URI:', redirectUri);
 const scopes = ['user-read-private', 'user-read-email'];
-
 //const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
 
 // object define the authorization and token endpoints for the OAuth 2.0 flow
@@ -59,13 +57,15 @@ export default function LoginScreen() {
           code,
           redirectUri,
           extraParams: {
-            codse_verifier: request?.codeVerifier,
+            code_verifier: request?.codeVerifier,
           },
         },
         discovery
       );
       setToken(tokenResult.accessToken);
-      fetchUserData(tokenResult.accessToken);
+      await fetchUserData(tokenResult.accessToken);
+      // Navigate to the index page after successful authentication
+      router.replace('/');
     } catch (error) {
       console.error('Error exchanging code for token:', error);
     }
@@ -80,11 +80,15 @@ export default function LoginScreen() {
       });
       const data = await response.json();
       setUserData(data);
+      return data;
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   }
 
+  //<Link href="/">
+  //<Pressable className="items-center justify-center text-lg font-bold text-center text-white">Login</Pressable>
+  //</Link>
 
   return (
     <>
@@ -104,17 +108,9 @@ export default function LoginScreen() {
           {userData && (
             <Text className="text-white">Welcome, {userData.display_name}!</Text>
           )}
-
-
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Google</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Facebook</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Apple</Pressable>
-
-
-
-          <Link href="/">
-            <Pressable className="items-center justify-center text-lg font-bold text-center text-white">Login</Pressable>
-          </Link>
         </View>
       </ImageBackground>
     </>

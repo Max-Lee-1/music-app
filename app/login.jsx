@@ -12,7 +12,6 @@ import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-se
 import * as Random from 'expo-random';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 // ensures  any open web browser session is properly closed 
 // and that the authentication flow is completed correctly when the user is redirected back to the app.
 WebBrowser.maybeCompleteAuthSession();
@@ -36,8 +35,8 @@ const scopes = ['user-read-private', 'user-read-email'];
 //  redirectUri: "http://localhost:8081/spotify-auth-callback", 
 //}
 
-
 // object define the authorization and token endpoints for the OAuth 2.0 flow
+
 const discovery = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
   tokenEndpoint: 'https://accounts.spotify.com/api/token',
@@ -65,6 +64,7 @@ export default function LoginScreen() {
     }
   }, [response]);
 
+  //
   async function exchangeCodeForToken(code) {
     try {
       const tokenResult = await exchangeCodeAsync(
@@ -79,6 +79,7 @@ export default function LoginScreen() {
         discovery
       );
       setToken(tokenResult.accessToken);
+      // set user data to async storage
       await AsyncStorage.setItem('token', tokenResult.accessToken);
       await fetchUserData(tokenResult.accessToken);
       // Navigate to the index page after successful authentication

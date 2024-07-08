@@ -3,8 +3,11 @@ import "../constants/styles.css";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, Pressable, Button } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import Delete from "../assets/icons_ver_1_png/Delete.png";
+import { useSpotifyAuth } from './useSpotifyAuth.js';
+
 
 const UserModal = ({ visible, onClose }) => {
+    const { userData, logout } = useSpotifyAuth();
 
     return (
         <Modal
@@ -20,7 +23,7 @@ const UserModal = ({ visible, onClose }) => {
                         <Image source={Delete} style={{ width: '1.75rem', height: '1.75rem' }} />
                     </TouchableOpacity>
                     <View className="items-center justify-center w-20">
-                        <Link href="/login" className='p-2 text-red-600 rounded-lg bg-slate-950'>Logout</Link>
+                        <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg bg-slate-950'>Logout</TouchableOpacity>
                     </View>
                 </View>
 

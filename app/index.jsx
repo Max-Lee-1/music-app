@@ -12,7 +12,8 @@ import Pause from "../assets/icons_ver_1_png/Pause.png";
 import Loop from "../assets/icons_ver_1_png/Loop.png";
 import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSpotifyAuth } from './useSpotifyAuth.js';
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);

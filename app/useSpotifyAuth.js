@@ -1,6 +1,7 @@
 // useSpotifyAuth.js
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
 export const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
@@ -23,10 +24,11 @@ export const useSpotifyAuth = () => {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("spotifyToken");
-      await AsyncStorage.removeItem("spotifyUserData");
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("userData");
       setToken(null);
       setUserData(null);
+      router.replace("/login");
     } catch (error) {
       console.error("Error logging out:", error);
     }

@@ -45,6 +45,8 @@ const discovery = {
 export default function LoginScreen() {
   const [token, setToken] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [userProfile, setUserProfile] = useState();
+
 
   const [request, response, promptAsync] = useAuthRequest(
     {
@@ -80,6 +82,9 @@ export default function LoginScreen() {
       );
       setToken(tokenResult.accessToken);
       // set user data to async storage
+      const expirationDate = new Date(tokenResult.accessTokenExpiraionDate).getTime();
+      console.log(expirationDate);
+      await AsyncStorage.setItem('expirationDate', expirationDate.toString());
       await AsyncStorage.setItem('token', tokenResult.accessToken);
       await fetchUserData(tokenResult.accessToken);
       // Navigate to the index page after successful authentication
@@ -98,7 +103,7 @@ export default function LoginScreen() {
       });
       const data = await response.json();
       setUserData(data);
-      return data;
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
@@ -120,7 +125,9 @@ export default function LoginScreen() {
             className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
             Sign in with Spotify</Pressable>
           {userData && (
-            <Text className="text-white">Welcome, {userData.display_name}!</Text>
+            <Pressable
+              className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
+              Sign in as {userProfile.display_name}</Pressable>
           )}
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Google</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Facebook</Pressable>

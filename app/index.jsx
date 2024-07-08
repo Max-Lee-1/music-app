@@ -13,56 +13,38 @@ import Loop from "../assets/icons_ver_1_png/Loop.png";
 import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSpotifyAuth } from './useSpotifyAuth.js';
+import useSpotifyAuth from './useSpotifyAuth.js';
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
-  const [userProfile, setUserProfile] = useState();
-
-  const getProfile = async () => {
-    try {
-      const accessToken = await AsyncStorage.getItem("token");
-      if (!accessToken) {
-        console.log("No access token found");
-        return;
-      }
-
-      const response = await fetch("https://api.spotify.com/v1/me", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setUserProfile(data);
-      await AsyncStorage.setItem("userData", JSON.stringify(data));
-      console.log("User profile fetched:", data);
-    } catch (err) {
-      console.error("Error fetching profile:", err.message);
-    }
-  };
+  const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
 
   useEffect(() => {
-    const loadProfileData = async () => {
-      try {
-        const storedUserData = await AsyncStorage.getItem("userData");
-        if (storedUserData) {
-          setUserProfile(JSON.parse(storedUserData));
-        } else {
-          await getProfile();
-        }
-      } catch (error) {
-        console.error("Error loading profile data:", error);
-      }
-    };
-    loadProfileData();
+    loadToken();
+    loadUserProfile();
   }, []);
 
+  //const getProfile = async () => {
+  //  try {
+  //    const response = await fetch("https://api.spotify.com/v1/me", {
+  //      headers: {
+  //        Authorization: `Bearer ${token}`,
+  //      },
+  //    });
+  //
+  //    if (!response.ok) {
+  //      throw new Error(`HTTP error! status: ${response.status}`);
+  //    }
+  //
+  //    const data = await response.json();
+  //    setUserProfile(data);
+  //    await AsyncStorage.setItem("userData", JSON.stringify(data));
+  //    console.log("User profile fetched:", data);
+  //  } catch (err) {
+  //    console.error("Error fetching profile:", err.message);
+  //  }
+  //};
 
   return (
     <>

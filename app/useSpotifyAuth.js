@@ -3,36 +3,47 @@ import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
-export const useSpotifyAuth = () => {
+const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
-  useEffect(() => {
-    const loadTokenAndUserData = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem("spotifyToken");
-        const storedUserData = await AsyncStorage.getItem("spotifyUserData");
-        if (storedToken) setToken(storedToken);
-        if (storedUserData) setUserData(JSON.parse(storedUserData));
-      } catch (error) {
-        console.error("Error loading auth data:", error);
+  const loadToken = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+        console.log("storedToken: " + storedToken);
       }
-    };
+    } catch (error) {
+      console.error("Error loading token:", error);
+    }
+  };
 
-    loadTokenAndUserData();
-  }, []);
+  const loadUserProfile = async () => {
+    try {
+      const userProfile = await AsyncStorage.getItem("userData");
+      if (userProfile) {
+        setUserProfile(JSON.parse(userProfile));
+        console.log("store user profile: " + userProfile);
+      }
+    } catch (error) {
+      console.error("Error loading userProfile:", error);
+    }
+  };
 
   const logout = async () => {
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("userData");
       setToken(null);
-      setUserData(null);
+      setUserProfile(null);
       router.replace("/login");
     } catch (error) {
       console.error("Error logging out:", error);
     }
   };
 
-  return { token, userData, logout };
+  return { token, userProfile, logout, loadToken, loadUserProfile };
 };
+
+export default useSpotifyAuth;

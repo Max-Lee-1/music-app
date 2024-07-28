@@ -19,7 +19,7 @@ WebBrowser.maybeCompleteAuthSession();
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
 const redirectUri = "http://localhost:8081/spotify-auth-callback";
 console.log('Redirect URI:', redirectUri);
-const scopes = ['user-read-private', 'user-read-email'];
+const scopes = ['user-read-private', 'user-read-email', 'user-library-read', 'user-read-recently-played', 'user-top-read', 'playlist-read-private', 'playlist-read-collaborative', 'playlist-modify-public'];
 //const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
 //const config = {
 //  clientId: clientId,
@@ -83,8 +83,8 @@ export default function LoginScreen() {
       setToken(tokenResult.accessToken);
       // set user data to async storage
       const expirationDate = new Date(tokenResult.accessTokenExpiraionDate).getTime();
-      console.log(expirationDate);
       await AsyncStorage.setItem('expirationDate', expirationDate.toString());
+      console.log(expirationDate);
       await AsyncStorage.setItem('token', tokenResult.accessToken);
       await fetchUserData(tokenResult.accessToken);
       // Navigate to the index page after successful authentication
@@ -102,6 +102,7 @@ export default function LoginScreen() {
         },
       });
       const data = await response.json();
+      console.log("Data: " + data)
       setUserData(data);
       await AsyncStorage.setItem("userData", JSON.stringify(data));
     } catch (error) {

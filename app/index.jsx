@@ -19,32 +19,7 @@ export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
-
-  useEffect(() => {
-    loadToken();
-    loadUserProfile();
-  }, []);
-
-  //const getProfile = async () => {
-  //  try {
-  //    const response = await fetch("https://api.spotify.com/v1/me", {
-  //      headers: {
-  //        Authorization: `Bearer ${token}`,
-  //      },
-  //    });
-  //
-  //    if (!response.ok) {
-  //      throw new Error(`HTTP error! status: ${response.status}`);
-  //    }
-  //
-  //    const data = await response.json();
-  //    setUserProfile(data);
-  //    await AsyncStorage.setItem("userData", JSON.stringify(data));
-  //    console.log("User profile fetched:", data);
-  //  } catch (err) {
-  //    console.error("Error fetching profile:", err.message);
-  //  }
-  //};
+  console.log("index" + userProfile);
 
   return (
     <>

@@ -8,6 +8,8 @@ const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [userPlaylists, setUserPlaylists] = useState([]);
+  const [playlistTracks, setPlaylistTracks] = useState([]);
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,25 +59,51 @@ const useSpotifyAuth = () => {
 
   const getUserPlaylists = async () => {
     console.log("running getUserPlaylist");
-    const accessToken = await AsyncStorage.getItem("token");
-    //console.log(accessToken);
-    console.log("getUserPlaylist UserProfile: " + userProfile);
-    const userId = userProfile.id;
-    console.log("User Id:" + userId);
     try {
+      const accessToken = await AsyncStorage.getItem("token");
+      if (!accessToken) {
+        console.error("No access token found");
+        return;
+      }
+      if (!userProfile || !userProfile.id) {
+        console.error("User profile not loaded");
+        return;
+      }
+      const userId = userProfile.id;
+      console.log("User Id:", userId);
+
       const response = await axios({
         method: "get",
-        url:
-          "https://api.spotify.com/v1/users/" + userId + "/playlists?limit=10",
+        url: `https://api.spotify.com/v1/users/${userId}/playlists?limit=10`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
       const userPlaylists = response.data;
       setUserPlaylists(userPlaylists);
-      console.log(userPlaylists);
-      //const user_playlists_name = response.data.items[0].name;
-      //console.log(user_playlists_name);
+      console.log("Playlists fetched:", userPlaylists.items.length);
+    } catch (err) {
+      console.log("Error fetching playlists:", err.message);
+    }
+  };
+
+  const getPlaylistTracks = async (playlistId) => {
+    const accessToken = await AsyncStorage.getItem("token");
+    console.log("running getPlaylistTracks for playlist:", playlistId);
+
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const tracks = response.data.items.map((item) => item.track);
+      setPlaylistTracks(tracks);
+      setSelectedPlaylistId(playlistId);
+      console.log("Tracks fetched:", tracks.length);
     } catch (err) {
       console.log(err.message);
     }
@@ -85,10 +113,14 @@ const useSpotifyAuth = () => {
     token,
     userProfile,
     userPlaylists,
+    playlistTracks,
+    selectedPlaylistId,
     logout,
     loadToken,
     loadUserProfile,
     getUserPlaylists,
+    getPlaylistTracks,
+    setSelectedPlaylistId,
   };
 };
 

@@ -14,6 +14,7 @@ import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useSpotifyAuth from './useSpotifyAuth.js';
+import { PlayerContext } from './PlayerContext';
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -23,47 +24,48 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="auto" />
-      <ImageBackground
-        source={gradientDemo}
-        style={{ width: '100%', height: '100%' }}
-        resizeMode='cover'
-      >
+      <PlayerContext>
+        <StatusBar style="auto" />
+        <ImageBackground
+          source={gradientDemo}
+          style={{ width: '100%', height: '100%' }}
+          resizeMode='cover'
+        >
 
-        <View className="flex-1 w-full pt-[5vh] px-[4vw]">
-          <View className="flex-row items-start justify-between">
-            <TouchableOpacity onPress={() => setUserModalVisible(true)}>
+          <View className="flex-1 w-full pt-[5vh] px-[4vw]">
+            <View className="flex-row items-start justify-between">
+              <TouchableOpacity onPress={() => setUserModalVisible(true)}>
 
-              {userProfile && userProfile.images && userProfile.images[0] ? (
-                <Image
-                  source={{ uri: userProfile.images[0].url }}
-                  className=""
-                  style={{ width: 32, height: 32, borderRadius: 16 }}
-                />
-              ) : (
-                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setSearchModalVisible(true)}>
-              <Image source={List} className="" style={{ width: '2rem', height: '2rem' }} />
-            </TouchableOpacity>
+                {userProfile && userProfile.images && userProfile.images[0] ? (
+                  <Image
+                    source={{ uri: userProfile.images[0].url }}
+                    className=""
+                    style={{ width: 32, height: 32, borderRadius: 16 }}
+                  />
+                ) : (
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSearchModalVisible(true)}>
+                <Image source={List} className="" style={{ width: '2rem', height: '2rem' }} />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
-          <View className="flex-row items-start justify-between">
-            <Image source={Shuffle} className="mr-3" style={{ width: '1.75rem', height: '1.75rem' }} />
-            <Image source={Arrow} className="mx-3 rotate-180" style={{ width: '1.75rem', height: '1.75rem' }} />
-            <Image source={Pause} className="mx-3" style={{ width: '1.75rem', height: '1.75rem' }} />
-            <Image source={Arrow} className="mx-3 " style={{ width: '1.75rem', height: '1.75rem' }} />
-            <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+          <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
+            <View className="flex-row items-start justify-between">
+              <Image source={Shuffle} className="mr-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+              <Image source={Arrow} className="mx-3 rotate-180" style={{ width: '1.75rem', height: '1.75rem' }} />
+              <Image source={Pause} className="mx-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+              <Image source={Arrow} className="mx-3 " style={{ width: '1.75rem', height: '1.75rem' }} />
+              <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
+            </View>
           </View>
-        </View>
 
-      </ImageBackground>
-      <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />
-      <UserModal visible={userModalVisible} onClose={() => setUserModalVisible(false)} />
-
+        </ImageBackground>
+        <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />
+        <UserModal visible={userModalVisible} onClose={() => setUserModalVisible(false)} />
+      </PlayerContext>
 
     </>
   );

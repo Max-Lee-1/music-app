@@ -69,7 +69,9 @@ export default function App() {
             </View>
           </View>
 
-          <View><SpotifyPlayback token={token} trackUri={trackUri} /></View>
+          <View>
+            <SpotifyPlayback />
+          </View>
 
         </ImageBackground>
         <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />

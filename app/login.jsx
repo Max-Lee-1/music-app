@@ -19,7 +19,22 @@ WebBrowser.maybeCompleteAuthSession();
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
 const redirectUri = "http://localhost:8081/spotify-auth-callback";
 console.log('Redirect URI:', redirectUri);
-const scopes = ['user-read-private', 'user-read-email', 'user-library-read', 'user-read-recently-played', 'user-top-read', 'playlist-read-private', 'playlist-read-collaborative', 'playlist-modify-public'];
+const scopes = [
+  'user-read-private',
+  'user-read-email',
+  'user-library-read',
+  'user-read-recently-played',
+  'user-top-read',
+  'playlist-read-private',
+  'playlist-read-collaborative',
+  'playlist-modify-public',
+  'user-read-private',
+  'user-read-email',
+  'user-library-read',
+  'user-read-playback-state',
+  'user-modify-playback-state',
+  'streaming',
+  'user-read-currently-playing',];
 //const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
 //const config = {
 //  clientId: clientId,

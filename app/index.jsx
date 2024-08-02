@@ -15,13 +15,20 @@ import UserModal from './user.jsx';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useSpotifyAuth from './useSpotifyAuth.js';
 import { PlayerContext } from './PlayerContext';
+import SpotifyPlayback from './SpotifyPlayback';
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
   console.log("index" + userProfile);
+  const [playingTrack, setPlayingTrack] = useState();
+  const [trackUri, setTrackUri] = useState(null);
 
+  useEffect(() => {
+    loadToken();
+    loadUserProfile();
+  }, []);
   return (
     <>
       <PlayerContext>
@@ -61,6 +68,8 @@ export default function App() {
               <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
             </View>
           </View>
+
+          <View><SpotifyPlayback token={token} trackUri={trackUri} /></View>
 
         </ImageBackground>
         <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />

@@ -19,7 +19,7 @@ const SearchModal = ({ visible, onClose }) => {
     const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
     const [value, setValue] = useState(2);
     const [queue, setQueue] = useState([]);
-    const { playTrack } = usePlayer();
+    const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
 
     const addToQueue = (track) => {
         setQueue(prevQueue => [...prevQueue, track]);
@@ -107,7 +107,14 @@ const SearchModal = ({ visible, onClose }) => {
             <View className="flex-row items-center justify-between m-2">
                 <Text>{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
                 <View className="flex-row">
-                    <TouchableOpacity onPress={() => currentTrack?.id === item.id ? togglePlayPause() : playTrack(item)} className="mr-2">
+
+                    <TouchableOpacity onPress={() => {
+                        if (currentTrack?.id === item.id) {
+                            togglePlayPause();
+                        } else {
+                            playTrack(item);
+                        }
+                    }} className="mr-2">
                         <Image
                             source={currentTrack?.id === item.id && isPlaying ? Pause : Play}
                             style={{ width: 24, height: 24 }}

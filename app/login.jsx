@@ -36,21 +36,6 @@ const scopes = [
   'streaming',
   'user-read-currently-playing',];
 //const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
-//const config = {
-//  clientId: clientId,
-//  scopes: [
-//    'user-read-email',
-//    'user-library-read',
-//    'user-read-recently-played',
-//    'user-top-read',
-//    'playlist-read-private',
-//    'playlist-read-collaborative',
-//    'playlist-modify-public'
-//  ],
-//  redirectUri: "http://localhost:8081/spotify-auth-callback", 
-//}
-
-// object define the authorization and token endpoints for the OAuth 2.0 flow
 
 const discovery = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',

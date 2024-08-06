@@ -18,19 +18,8 @@ const SearchModal = ({ visible, onClose }) => {
     const { token, userProfile, userPlaylists, playlistTracks, loadToken, loadUserProfile, getUserPlaylists, getPlaylistTracks } = useSpotifyAuth();
     const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
     const [value, setValue] = useState(2);
-    const [queue, setQueue] = useState([]);
-    const { playTrack, currentTrack, isPlaying, togglePlayPause } = usePlayer();
+    const { playTrack, currentTrack, isPlaying, togglePlayPause, addToQueue, queue, removeFromQueue } = usePlayer();
 
-    const addToQueue = (track) => {
-        setQueue(prevQueue => [...prevQueue, track]);
-        if (queue.length === 0) {
-            playTrack(track);
-        }
-    };
-
-    const removeFromQueue = (indexToRemove) => {
-        setQueue(prevQueue => prevQueue.filter((_, index) => index !== indexToRemove));
-    };
 
     const renderTrackItem = ({ item }) => (
         <TouchableOpacity className="flex-row items-center justify-between m-2">

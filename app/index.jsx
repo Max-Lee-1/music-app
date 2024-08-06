@@ -59,19 +59,7 @@ export default function App() {
             </View>
           </View>
 
-          <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
-            <View className="flex-row items-start justify-between">
-              <Image source={Shuffle} className="mr-3" style={{ width: '1.75rem', height: '1.75rem' }} />
-              <Image source={Arrow} className="mx-3 rotate-180" style={{ width: '1.75rem', height: '1.75rem' }} />
-              <Image source={Pause} className="mx-3" style={{ width: '1.75rem', height: '1.75rem' }} />
-              <Image source={Arrow} className="mx-3 " style={{ width: '1.75rem', height: '1.75rem' }} />
-              <Image source={Loop} className="ml-3" style={{ width: '1.75rem', height: '1.75rem' }} />
-            </View>
-          </View>
-
-          <View>
-            <SpotifyPlayback />
-          </View>
+          <SpotifyPlayback />
 
         </ImageBackground>
         <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />

@@ -3,6 +3,12 @@ import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://jbeycklmkrjxlttwtmkb.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZXlja2xta3JqeGx0dHd0bWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5OTQ3MjAsImV4cCI6MjAzODU3MDcyMH0.xix1tPCFdcPXCkmvrFANHKSNXWetWEzJBnqpQ9sDtoQ"
+);
 
 const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
@@ -38,10 +44,30 @@ const useSpotifyAuth = () => {
         const userProfileData = JSON.parse(userProfileString);
         setUserProfile(userProfileData);
         console.log("Stored user profile:", userProfileData);
+        return;
+      } else {
+        console.log("No stored user profile found");
       }
     } catch (error) {
       console.error("Error loading userProfile:", error);
       setUserProfile(null);
+    }
+  };
+
+  const fetchAndSaveUserProfile = async (accessToken) => {
+    try {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
+      setUserProfile(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
     }
   };
 
@@ -109,6 +135,70 @@ const useSpotifyAuth = () => {
     }
   };
 
+  const loginAndSaveUser = async (spotifyToken, spotifyProfile) => {
+    console.log("Attempting to save user. Token:", !!spotifyToken);
+    console.log("Spotify Profile:", spotifyProfile);
+
+    if (!spotifyProfile || !spotifyProfile.id) {
+      console.error("Invalid Spotify profile or missing ID");
+      return null;
+    }
+    setToken(spotifyToken);
+    setUserProfile(spotifyProfile);
+
+    // Save user to supabase
+    const { data, error } = await supabase.from("users").upsert(
+      {
+        spotify_id: spotifyProfile.id,
+        email: spotifyProfile.email,
+        role: "admin", // Default role
+      },
+      { onConflict: "spotify_id" }
+    );
+
+    if (error) {
+      console.error("Error saving user to Supabase:", error);
+      console.error("Error details:", error.message, error.details);
+    } else if (data) {
+      console.log("User successfully saved to Supabase:", data);
+    }
+
+    // Check and return the user role
+    return await checkUserRole(spotifyProfile);
+  };
+
+  const checkUserRole = async (spotifyProfile) => {
+    if (!spotifyProfile.id) {
+      console.log("spotify id: " + spotifyProfile.id);
+      console.error("Spotify ID not provided");
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("role")
+        .eq("spotify_id", spotifyProfile.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        return null;
+      }
+
+      if (!data) {
+        console.log("User not found in database");
+        return null;
+      }
+
+      console.log("User role fetched:", data.role);
+      return data.role;
+    } catch (error) {
+      console.error("Unexpected error in checkUserRole:", error);
+      return null;
+    }
+  };
+
   return {
     token,
     userProfile,
@@ -118,9 +208,12 @@ const useSpotifyAuth = () => {
     logout,
     loadToken,
     loadUserProfile,
+    fetchAndSaveUserProfile,
     getUserPlaylists,
     getPlaylistTracks,
     setSelectedPlaylistId,
+    loginAndSaveUser,
+    checkUserRole,
   };
 };
 

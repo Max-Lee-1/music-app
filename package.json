@@ -16,6 +16,8 @@
     "@react-navigation/material-top-tabs": "^6.6.14",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/stack": "^6.3.29",
+    "@supabase/gotrue-js": "^2.64.4",
+    "@supabase/supabase-js": "^2.45.1",
     "@unimodules/react-native-adapter": "^6.3.9",
     "axios": "^1.7.2",
     "emitter": "^0.0.2",

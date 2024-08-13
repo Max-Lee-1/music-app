@@ -10,12 +10,24 @@ import Play from "../assets/icons_ver_1_png/Play.png";
 import Loop from "../assets/icons_ver_1_png/Loop.png";
 
 export default function SpotifyPlayback() {
-  const { token } = useSpotifyAuth();
+  const { token, checkUserRole, userProfile } = useSpotifyAuth();
   const { currentTrack, isPlaying, togglePlayPause, setIsPlaying, queue } = usePlayer();
   const [player, setPlayer] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (token && userProfile) {
+        const role = await checkUserRole(userProfile);
+        console.log("User role:", role);
+        setUserRole(role);
+      }
+    };
+    fetchUserRole();
+  }, [token, userProfile]);
 
   useEffect(() => {
     if (!token) return;
@@ -135,30 +147,42 @@ export default function SpotifyPlayback() {
 
   if (!token) return null;
 
+
+
   return (
     <View>
-      <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
-        <View className="flex-row items-start justify-between">
-          <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
-            <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
-          </TouchableOpacity>
-          <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
-            <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
-          </TouchableOpacity>
-          <TouchableOpacity className="mx-3" onPress={handleTogglePlayPause}>
-            <Image source={isPlaying ? Pause : Play} style={{ width: 28, height: 28 }} />
-          </TouchableOpacity>
-          <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
-            <Image source={Arrow} style={{ width: 28, height: 28 }} />
-          </TouchableOpacity>
-          <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
-            <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
-          </TouchableOpacity>
+      {userRole === 'admin' ? (
+        <>
+          <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
+            <View className="flex-row items-start justify-between">
+              <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
+                <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
+              </TouchableOpacity>
+              <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
+                <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
+              </TouchableOpacity>
+              <TouchableOpacity className="mx-3" onPress={handleTogglePlayPause}>
+                <Image source={isPlaying ? Pause : Play} style={{ width: 28, height: 28 }} />
+              </TouchableOpacity>
+              <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
+                <Image source={Arrow} style={{ width: 28, height: 28 }} />
+              </TouchableOpacity>
+              <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
+                <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <Text>Spotify Player</Text>
+          {currentTrack && (
+            <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
+          )}
+        </>
+      ) : (
+        <View>
+          {currentTrack && (
+            <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
+          )}
         </View>
-      </View>
-      <Text>Spotify Player</Text>
-      {currentTrack && (
-        <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
       )}
     </View>
   );

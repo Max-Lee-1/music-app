@@ -11,6 +11,8 @@ import axios from 'axios';
 import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-session';
 import * as Random from 'expo-random';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useSpotifyAuth from './useSpotifyAuth';
+
 
 // ensures  any open web browser session is properly closed 
 // and that the authentication flow is completed correctly when the user is redirected back to the app.
@@ -43,21 +45,29 @@ const discovery = {
 };
 
 export default function LoginScreen() {
-  const [token, setToken] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [userProfile, setUserProfile] = useState();
-
+  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
 
   const [request, response, promptAsync] = useAuthRequest(
     {
+      responseType: 'code',
       clientId,
       scopes,
-      redirectUri,
       usePKCE: true,
-      responseType: 'code',
+      redirectUri,
     },
     discovery
   );
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      await loadToken();
+      await loadUserProfile();
+      await checkExistingUser();
+
+    };
+    initializeAuth();
+  }, []);
 
   useEffect(() => {
     if (response?.type === 'success') {
@@ -66,7 +76,7 @@ export default function LoginScreen() {
     }
   }, [response]);
 
-  //
+
   async function exchangeCodeForToken(code) {
     try {
       const tokenResult = await exchangeCodeAsync(
@@ -80,21 +90,24 @@ export default function LoginScreen() {
         },
         discovery
       );
-      setToken(tokenResult.accessToken);
-      // set user data to async storage
-      const expirationDate = new Date(tokenResult.accessTokenExpiraionDate).getTime();
-      await AsyncStorage.setItem('expirationDate', expirationDate.toString());
-      console.log(expirationDate);
+
       await AsyncStorage.setItem('token', tokenResult.accessToken);
-      await fetchUserData(tokenResult.accessToken);
-      // Navigate to the index page after successful authentication
-      router.replace('/');
+      const userData = await fetchAndSaveUserProfile(tokenResult.accessToken);
+
+      if (userData) {
+        await loginAndSaveUser(tokenResult.accessToken, userData);
+        checkUserRole(userData);
+        // Navigate to the index page after successful authentication
+        router.replace('/');
+      } else {
+        console.error('Failed to fetch user data');
+      }
     } catch (error) {
       console.error('Error exchanging code for token:', error);
     }
   }
 
-  async function fetchUserData(accessToken) {
+  async function fetchAndSaveUser(accessToken) {
     try {
       const response = await fetch('https://api.spotify.com/v1/me', {
         headers: {
@@ -107,6 +120,21 @@ export default function LoginScreen() {
       await AsyncStorage.setItem("userData", JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching user data:', error);
+    }
+  }
+
+  async function checkExistingUser() {
+    const storedToken = await AsyncStorage.getItem('token');
+    const storedUserData = await AsyncStorage.getItem('userData');
+
+    if (storedToken && storedUserData) {
+      const userData = JSON.parse(storedUserData);
+      const userRole = await checkUserRole(userData.id);
+      if (userRole) {
+        // User exists, perform auto-login
+        await loginAndSaveUser(storedToken, userData);
+        router.replace('/');
+      }
     }
   }
 
@@ -125,10 +153,11 @@ export default function LoginScreen() {
             disabled={!request}
             className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
             Sign in with Spotify</Pressable>
-          {userData && (
+          {userProfile && (
             <Pressable
               className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
-              Sign in as {userProfile.display_name}</Pressable>
+              Sign in as {userProfile.display_name || 'User'}
+            </Pressable>
           )}
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Google</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Facebook</Pressable>

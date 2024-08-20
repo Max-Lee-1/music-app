@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+// SpotifyPlayback.jsx
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { usePlayer } from "./PlayerContext";
 import useSpotifyAuth from "./useSpotifyAuth";
@@ -8,6 +9,7 @@ import Arrow from "../assets/icons_ver_1_png/Arrows.png";
 import Pause from "../assets/icons_ver_1_png/Pause.png";
 import Play from "../assets/icons_ver_1_png/Play.png";
 import Loop from "../assets/icons_ver_1_png/Loop.png";
+import AudioVisualizer from './AudioVisualizer';
 
 export default function SpotifyPlayback() {
   const { token, checkUserRole, userProfile } = useSpotifyAuth();
@@ -17,6 +19,8 @@ export default function SpotifyPlayback() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
   const [userRole, setUserRole] = useState(null);
+  const audioContext = useRef(null);
+  const analyser = useRef(null);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -87,6 +91,33 @@ export default function SpotifyPlayback() {
     playTrack();
   }, [player, currentTrack, deviceId, token]);
 
+  useEffect(() => {
+    if (!audioContext.current) {
+      audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+      analyser.current = audioContext.current.createAnalyser();
+      analyser.current.fftSize = 512;
+    }
+
+    return () => {
+      if (audioContext.current) {
+        audioContext.current.close();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (player) {
+      player.addListener('player_state_changed', (state) => {
+        if (state) {
+          setIsPlaying(!state.paused);
+          if (state.track_window.current_track.id !== currentTrack?.id) {
+            setCurrentTrack(state.track_window.current_track);
+          }
+        }
+      });
+    }
+  }, [player]);
+
   const handleTogglePlayPause = async () => {
     if (!player) return;
     try {
@@ -147,10 +178,13 @@ export default function SpotifyPlayback() {
 
   if (!token) return null;
 
-
-
   return (
-    <View>
+    <View className="flex-1 ">
+      <AudioVisualizer
+        audioContext={audioContext.current}
+        analyser={analyser.current}
+        isPlaying={isPlaying}
+      />
       {userRole === 'admin' ? (
         <>
           <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">

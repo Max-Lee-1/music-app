@@ -1,3 +1,4 @@
+//user.jsx
 import React, { useEffect, useState } from 'react';
 import "../constants/styles.css";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, Pressable, Button, ActivityIndicator } from 'react-native';

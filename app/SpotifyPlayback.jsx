@@ -1,4 +1,3 @@
-// SpotifyPlayback.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { usePlayer } from "./PlayerContext";
@@ -11,37 +10,39 @@ import Play from "../assets/icons_ver_1_png/Play.png";
 import Loop from "../assets/icons_ver_1_png/Loop.png";
 import AudioVisualizer from './AudioVisualizer';
 
+// Main SpotifyPlayback component
 export default function SpotifyPlayback() {
-  const { token, checkUserRole, userProfile } = useSpotifyAuth();
-  const { currentTrack, isPlaying, togglePlayPause, setIsPlaying, queue } = usePlayer();
+  // Get token from Spotify auth
+  const { token } = useSpotifyAuth();
+
+  // Get player state and functions from PlayerContext
+  const { currentTrack, isPlaying, togglePlayPause, setIsPlaying, queue, setCurrentTrack } = usePlayer();
+
+  // State variables
   const [player, setPlayer] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
-  const [userRole, setUserRole] = useState(null);
+
+  // Audio context and analyser refs
   const audioContext = useRef(null);
   const analyser = useRef(null);
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (token && userProfile) {
-        const role = await checkUserRole(userProfile);
-        console.log("User role:", role);
-        setUserRole(role);
-      }
-    };
-    fetchUserRole();
-  }, [token, userProfile]);
+  const currentTrackRef = useRef(currentTrack);
 
+
+
+  // 1st useEffect: Initialize Spotify player SDK
   useEffect(() => {
     if (!token) return;
-
+    // Create script tag for Spotify player SDK
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
     script.async = true;
 
     document.body.appendChild(script);
 
+    // Set up player instance
     window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: 'React Native Expo Web Player',
@@ -50,6 +51,7 @@ export default function SpotifyPlayback() {
 
       setPlayer(player);
 
+      // Add event listeners for player state changes
       player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);
         setDeviceId(device_id);
@@ -73,6 +75,8 @@ export default function SpotifyPlayback() {
     };
   }, [token]);
 
+
+  // 2nd useEffect: Play track when player is ready
   useEffect(() => {
     if (!player || !currentTrack || !deviceId) return;
 
@@ -91,7 +95,9 @@ export default function SpotifyPlayback() {
     playTrack();
   }, [player, currentTrack, deviceId, token]);
 
+  // 3rd useEffect: Set up audio context and analyser
   useEffect(() => {
+    console.log("Running 3rd useEffect in SpotifyPlayback.");
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
       analyser.current = audioContext.current.createAnalyser();
@@ -106,11 +112,17 @@ export default function SpotifyPlayback() {
   }, []);
 
   useEffect(() => {
+    currentTrackRef.current = currentTrack;
+  }, [currentTrack]);
+
+  // 4th useEffect: Add event listener for player state changes
+  useEffect(() => {
+    console.log("Running 4th useEffect in SpotifyPlayback.");
     if (player) {
       player.addListener('player_state_changed', (state) => {
         if (state) {
           setIsPlaying(!state.paused);
-          if (state.track_window.current_track.id !== currentTrack?.id) {
+          if (state.track_window.current_track.id !== currentTrackRef.current?.id) {
             setCurrentTrack(state.track_window.current_track);
           }
         }
@@ -180,44 +192,36 @@ export default function SpotifyPlayback() {
 
   return (
     <View className="flex-1 ">
-      <AudioVisualizer
+      <AudioVisualizer id="audioVisualizer" className="items-center justify-center flex-1 h-0"
         audioContext={audioContext.current}
         analyser={analyser.current}
         isPlaying={isPlaying}
       />
-      {userRole === 'admin' ? (
-        <>
-          <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
-            <View className="flex-row items-start justify-between">
-              <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
-                <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
-              </TouchableOpacity>
-              <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
-                <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
-              </TouchableOpacity>
-              <TouchableOpacity className="mx-3" onPress={handleTogglePlayPause}>
-                <Image source={isPlaying ? Pause : Play} style={{ width: 28, height: 28 }} />
-              </TouchableOpacity>
-              <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
-                <Image source={Arrow} style={{ width: 28, height: 28 }} />
-              </TouchableOpacity>
-              <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
-                <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
-              </TouchableOpacity>
-            </View>
+      <>
+        <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
+          <View className="flex-row items-start justify-between">
+            <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
+              <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
+            </TouchableOpacity>
+            <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
+              <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
+            </TouchableOpacity>
+            <TouchableOpacity className="mx-3" onPress={handleTogglePlayPause}>
+              <Image source={isPlaying ? Pause : Play} style={{ width: 28, height: 28 }} />
+            </TouchableOpacity>
+            <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
+              <Image source={Arrow} style={{ width: 28, height: 28 }} />
+            </TouchableOpacity>
+            <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
+              <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
+            </TouchableOpacity>
           </View>
-          <Text>Spotify Player</Text>
-          {currentTrack && (
-            <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
-          )}
-        </>
-      ) : (
-        <View>
-          {currentTrack && (
-            <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
-          )}
         </View>
-      )}
+        <Text>Spotify Player</Text>
+        {currentTrack && (
+          <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
+        )}
+      </>
     </View>
   );
 }

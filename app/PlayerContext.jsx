@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import useSpotifyAuth from "./useSpotifyAuth";
 import axios from 'axios';
 
@@ -8,6 +8,7 @@ const PlayerContext = ({ children }) => {
     const [currentTrack, setCurrentTrack] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [queue, setQueue] = useState([]);
+    const [queueToAdd, setQueueToAdd] = useState([]);
     const [currentTrackIndex, setCurrentTrackIndex] = useState(-1);
     const { token } = useSpotifyAuth();
 
@@ -25,24 +26,33 @@ const PlayerContext = ({ children }) => {
         setIsPlaying(!isPlaying);
     };
 
-    const addToQueue = async (track) => {
-        //local queue
+    useEffect(() => {
+        if (queueToAdd.length > 0) {
+            const addTracksToQueue = async () => {
+                try {
+                    await Promise.all(queueToAdd.map(track =>
+                        axios.post(
+                            `https://api.spotify.com/v1/me/player/queue?uri=${track.uri}`,
+                            {},
+                            { headers: { 'Authorization': `Bearer ${token}` } }
+                        )
+                    ));
+                    setQueueToAdd([]);
+                } catch (error) {
+                    console.error('Error adding tracks to Spotify queue:', error);
+                }
+            };
+            addTracksToQueue();
+        }
+    }, [queueToAdd, token]);
+
+    const addToQueue = (track) => {
         setQueue(prevQueue => [...prevQueue, track]);
         if (queue.length === 0 && !currentTrack) {
             playTrack(track, 0);
         }
-        //spotify queue
-        try {
-            await axios.post(
-                `https://api.spotify.com/v1/me/player/queue?uri=${track.uri}`,
-                {},
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-        } catch (error) {
-            console.error('Error adding track to Spotify queue:', error);
-        }
+        setQueueToAdd(prev => [...prev, track]);
     };
-
 
     const removeFromQueue = (indexToRemove) => {
         setQueue(prevQueue => prevQueue.filter((_, index) => index !== indexToRemove));
@@ -83,7 +93,8 @@ const PlayerContext = ({ children }) => {
             removeFromQueue,
             playNext,
             playPrevious,
-            token
+            token,
+            setCurrentTrack
         }}>
             {children}
         </Player.Provider>

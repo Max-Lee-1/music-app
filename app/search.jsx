@@ -20,7 +20,6 @@ const SearchModal = ({ visible, onClose }) => {
     const [value, setValue] = useState(2);
     const { playTrack, currentTrack, isPlaying, togglePlayPause, addToQueue, queue, removeFromQueue } = usePlayer();
 
-
     const renderTrackItem = ({ item }) => (
         <TouchableOpacity className="flex-row items-center justify-between m-2">
             <Text>{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
@@ -29,8 +28,6 @@ const SearchModal = ({ visible, onClose }) => {
             </TouchableOpacity>
         </TouchableOpacity>
     );
-
-
 
     useEffect(() => {
         const loadData = async () => {
@@ -45,8 +42,6 @@ const SearchModal = ({ visible, onClose }) => {
             getUserPlaylists();
         }
     }, [userProfile]);
-
-
 
     const handlePlaylistSelect = async (playlistId) => {
         setSelectedPlaylistId(playlistId);
@@ -68,8 +63,6 @@ const SearchModal = ({ visible, onClose }) => {
         </View>
     );
 
-
-
     function PlaylistScreen() {
         return (
             <View className="flex-1">
@@ -87,8 +80,6 @@ const SearchModal = ({ visible, onClose }) => {
         );
     }
 
-
-
     function QueueScreen() {
         const { currentTrack, isPlaying, playTrack, togglePlayPause } = usePlayer();
 
@@ -96,12 +87,12 @@ const SearchModal = ({ visible, onClose }) => {
             <View className="flex-row items-center justify-between m-2">
                 <Text>{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
                 <View className="flex-row">
-
                     <TouchableOpacity onPress={() => {
                         if (currentTrack?.id === item.id) {
                             togglePlayPause();
                         } else {
-                            playTrack(item);
+                            console.log("playtrack item index search.jsx line 95")
+                            playTrack(item, index);
                         }
                     }} className="mr-2">
                         <Image
@@ -134,8 +125,6 @@ const SearchModal = ({ visible, onClose }) => {
             </View>
         );
     }
-
-
 
     return (
         <Modal

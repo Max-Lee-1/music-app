@@ -53,8 +53,9 @@ export default function SpotifyPlayback() {
 
       // Add event listeners for player state changes
       player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
+        console.log('Line 56 SpotifyPlayback - Ready with Device ID', device_id);
         setDeviceId(device_id);
+
       });
 
       player.addListener('not_ready', ({ device_id }) => {
@@ -101,7 +102,8 @@ export default function SpotifyPlayback() {
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
       analyser.current = audioContext.current.createAnalyser();
-      analyser.current.fftSize = 512;
+      analyser.current.fftSize = 256; // Increase this for more accurate loudness measurement
+      analyser.current.smoothingTimeConstant = 0.4; // Adjust between 0 and 1 for desired smoothing
     }
 
     return () => {

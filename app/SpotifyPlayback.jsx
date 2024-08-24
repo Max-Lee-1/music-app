@@ -24,19 +24,9 @@ export default function SpotifyPlayback() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
 
-  const ws = new WebSocket('ws://localhost:8080');
   // Audio context and analyser refs
   const audioContext = useRef(null);
   const analyser = useRef(null);
-
-  const currentTrackRef = useRef(currentTrack);
-
-  const gainNodeRef = useRef(null);
-  const [audioSource, setAudioSource] = useState(null);
-
-
-
-
 
   // 1st useEffect: Initialize Spotify player SDK
   useEffect(() => {
@@ -79,6 +69,8 @@ export default function SpotifyPlayback() {
 
     return () => {
       document.body.removeChild(script);
+      window.onSpotifyWebPlaybackSDKReady = null; // Clean up the SDK ready handler
+
     };
   }, [token]);
 
@@ -112,14 +104,11 @@ export default function SpotifyPlayback() {
       analyser.current.smoothingTimeConstant = 0.4;
     }
 
-    return () => {
-      if (audioContext.current) {
-        audioContext.current.close();
-      }
-    };
+    return () => { if (audioContext.current) audioContext.current.close(); };
+
   }, []);
 
-  useEffect(() => {
+  /**useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080');
 
     ws.onopen = () => {
@@ -139,7 +128,7 @@ export default function SpotifyPlayback() {
     };
 
     // Handle audio streaming
-    if (audioContext.current && analyser.current && !audioSource) {
+    if (audioContext.current && analyser.current && !audioSource && isPlaying) {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
           const source = audioContext.current.createMediaStreamSource(stream);
@@ -171,15 +160,19 @@ export default function SpotifyPlayback() {
         ws.close();
       }
     };
-  }, [audioContext, analyser, audioSource]);
-
-
+  }, [audioContext, analyser, audioSource]);**/
 
   const handleTogglePlayPause = async () => {
     if (!player) return;
     try {
       await player.togglePlay();
-      togglePlayPause();
+      const newIsPlaying = !isPlaying;
+      setIsPlaying(newIsPlaying);
+      if (newIsPlaying) {
+        audioContext.current.resume();
+      } else {
+        audioContext.current.suspend();
+      }
     } catch (error) {
       console.error('Error toggling play/pause:', error);
     }
@@ -238,11 +231,11 @@ export default function SpotifyPlayback() {
   return (
     <View className="flex-1 ">
       <AudioVisualizer
-        id="audioVisualizer"
-        className="items-center justify-center flex-1 h-0"
-        audioContext={audioContext.current}
-        analyser={analyser.current}
+        audioContext={audioContext}
+        analyser={analyser}
+        trackId={currentTrack?.id}
         isPlaying={isPlaying}
+        token={token}
       />
       <>
         <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">

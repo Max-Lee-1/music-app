@@ -13,6 +13,7 @@ function noise3D(x, y, z) {
 }
 
 export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
+    const ws = useRef(null);
     // Refs for Three.js objects
     const containerRef = useRef(null);
     const sceneRef = useRef(null);
@@ -74,21 +75,13 @@ export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
     }, []);
 
     useEffect(() => {
-        if (!analyser || !isPlaying) return;
+        if (!audioContext || !analyser || !isPlaying) return;
 
-        // Set up audio analysis
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
 
-
-        // Animation loop
-        const render = () => {
-            if (!isPlaying) return;
-
-            // Get frequency data
-            analyser.getByteFrequencyData(dataArray);
-
-            //console.log('Audio data:', dataArray);
+        const animate = () => {
+            analyser.getByteFrequencyData(dataArray)
 
             // Calculate loudness
             let sum = 0;
@@ -99,8 +92,6 @@ export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
             const rms = Math.sqrt(sum / bufferLength);
             const loudness = Math.pow(rms, 0.8); // Increase sensitivity
 
-            //console.log('Loudness:', loudness);
-
             if (sphereRef.current) {
                 // Rotate the sphere
                 sphereRef.current.rotation.x += 0.001;
@@ -108,18 +99,67 @@ export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
                 sphereRef.current.rotation.z += 0.005;
 
                 // Warp the sphere based on loudness
-                warpSphere(sphereRef.current, loudness * 12, loudness * 4);
+                warpSphere(sphereRef.current, loudness * 12);
             }
 
             // Render the scene
             if (rendererRef.current && sceneRef.current && cameraRef.current) {
                 rendererRef.current.render(sceneRef.current, cameraRef.current);
             }
-            requestAnimationFrame(render);
+
+            requestAnimationFrame(animate);
         };
 
-        render();
-    }, [analyser, isPlaying]);
+        animate();
+    }, [audioContext, analyser, isPlaying]);
+
+    //useEffect(() => {
+    //    if (!analyser || !isPlaying) return;
+    //
+    //    // Set up audio analysis
+    //    const bufferLength = analyser.frequencyBinCount;
+    //    const dataArray = new Uint8Array(bufferLength);
+    //
+    //    console.log("Data Array: " + dataArray);
+    //
+    //    // Animation loop
+    //    const render = () => {
+    //        if (!isPlaying) return;
+    //
+    //        // Get frequency data
+    //        analyser.getByteFrequencyData(dataArray);
+    //
+    //
+    //        // Calculate loudness
+    //        let sum = 0;
+    //        for (let i = 0; i < bufferLength; i++) {
+    //            const amplitude = (dataArray[i] - 128) / 128; // normalize to [-1, 1]
+    //            sum += amplitude * amplitude;
+    //        }
+    //        const rms = Math.sqrt(sum / bufferLength);
+    //        const loudness = Math.pow(rms, 0.8); // Increase sensitivity
+    //
+    //        //console.log('Loudness:', loudness);
+    //
+    //        if (sphereRef.current) {
+    //            // Rotate the sphere
+    //            sphereRef.current.rotation.x += 0.001;
+    //            sphereRef.current.rotation.y += 0.003;
+    //            sphereRef.current.rotation.z += 0.005;
+    //
+    //            // Warp the sphere based on loudness
+    //            warpSphere(sphereRef.current, loudness * 12, loudness * 4);
+    //        }
+    //
+    //        // Render the scene
+    //        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+    //            rendererRef.current.render(sceneRef.current, cameraRef.current);
+    //        }
+    //        requestAnimationFrame(render);
+    //    };
+    //
+    //    render();
+    //}, [analyser, isPlaying]);
 
 
     //INDIVIDUAL FREQUENCY 
@@ -143,8 +183,6 @@ export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
     //    // Warp the sphere based on audio data
     //    warpSphere(sphereRef.current, modulate(Math.pow(lowerMaxFr, 0.8), 0, 1, 0, 8), modulate(upperAvgFr, 0, 1, 0, 4));
     //}
-
-
 
     // Function to warp the sphere based on audio data
     function warpSphere(mesh, loudness) {
@@ -180,7 +218,7 @@ export default function AudioVisualizer({ audioContext, analyser, isPlaying }) {
         mesh.geometry.computeVertexNormals();
     }
 
-    return <View ref={containerRef} style={{ flex: 1 }} />;
+    return <View ref={containerRef} className="flex-1" />;
 }
 
 // Helper function to map a value from one range to another

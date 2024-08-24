@@ -24,11 +24,17 @@ export default function SpotifyPlayback() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
 
+  const ws = new WebSocket('ws://localhost:8080');
   // Audio context and analyser refs
   const audioContext = useRef(null);
   const analyser = useRef(null);
 
   const currentTrackRef = useRef(currentTrack);
+
+  const gainNodeRef = useRef(null);
+  const [audioSource, setAudioSource] = useState(null);
+
+
 
 
 
@@ -102,8 +108,8 @@ export default function SpotifyPlayback() {
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
       analyser.current = audioContext.current.createAnalyser();
-      analyser.current.fftSize = 256; // Increase this for more accurate loudness measurement
-      analyser.current.smoothingTimeConstant = 0.4; // Adjust between 0 and 1 for desired smoothing
+      analyser.current.fftSize = 256;
+      analyser.current.smoothingTimeConstant = 0.4;
     }
 
     return () => {
@@ -114,23 +120,60 @@ export default function SpotifyPlayback() {
   }, []);
 
   useEffect(() => {
-    currentTrackRef.current = currentTrack;
-  }, [currentTrack]);
+    const ws = new WebSocket('ws://localhost:8080');
 
-  // 4th useEffect: Add event listener for player state changes
-  useEffect(() => {
-    console.log("Running 4th useEffect in SpotifyPlayback.");
-    if (player) {
-      player.addListener('player_state_changed', (state) => {
-        if (state) {
-          setIsPlaying(!state.paused);
-          if (state.track_window.current_track.id !== currentTrackRef.current?.id) {
-            setCurrentTrack(state.track_window.current_track);
-          }
-        }
-      });
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      console.log('Message received from server:', event.data);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = (event) => {
+      console.log('WebSocket connection closed:', event.reason);
+    };
+
+    // Handle audio streaming
+    if (audioContext.current && analyser.current && !audioSource) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          const source = audioContext.current.createMediaStreamSource(stream);
+          source.connect(analyser.current);
+          setAudioSource(source);
+
+          const bufferLength = analyser.current.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+
+          const sendData = () => {
+            analyser.current.getByteFrequencyData(dataArray);
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify(Array.from(dataArray)));
+            }
+            requestAnimationFrame(sendData);
+          };
+
+          sendData();
+        })
+        .catch(err => console.error("Error accessing audio output: ", err));
     }
-  }, [player]);
+
+    return () => {
+      if (audioSource) {
+        audioSource.disconnect();
+      }
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [audioContext, analyser, audioSource]);
+
+
 
   const handleTogglePlayPause = async () => {
     if (!player) return;
@@ -194,7 +237,9 @@ export default function SpotifyPlayback() {
 
   return (
     <View className="flex-1 ">
-      <AudioVisualizer id="audioVisualizer" className="items-center justify-center flex-1 h-0"
+      <AudioVisualizer
+        id="audioVisualizer"
+        className="items-center justify-center flex-1 h-0"
         audioContext={audioContext.current}
         analyser={analyser.current}
         isPlaying={isPlaying}

@@ -146,7 +146,7 @@ export default function LoginScreen() {
         resizeMode='cover'
       >
         <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }} className="items-center justify-center flex-1 w-1/2 h-screen backdrop-blur-lg">
-          <Text className="my-4 text-4xl font-bold text-center text-white">Welcome To NAME</Text>
+          <Text className="my-4 text-4xl font-bold text-center text-white">Welcome To __</Text>
 
           <Pressable
             onPress={() => promptAsync()}

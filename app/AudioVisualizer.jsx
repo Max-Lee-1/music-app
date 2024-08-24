@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import axios from 'axios';
 import * as THREE from 'three';
-import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise"
+import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
 
 // Create a simplex noise generator
 const simplex = new SimplexNoise();
@@ -11,6 +11,14 @@ const simplex = new SimplexNoise();
 // Helper function to generate 3D noise
 function noise3D(x, y, z) {
     return simplex.noise3d(x, y, z);
+}
+
+// Helper function to map a value from one range to another
+function modulate(val, minVal, maxVal, outMin, outMax) {
+    const fractionate = (val, minVal, maxVal) => (val - minVal) / (maxVal - minVal);
+    const fr = fractionate(val, minVal, maxVal);
+    const delta = outMax - outMin;
+    return outMin + (fr * delta);
 }
 
 export default function AudioVisualizer({ audioContext, analyser, trackId, isPlaying, token }) {
@@ -23,9 +31,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
     const [audioFeatures, setAudioFeatures] = useState(null);
     const [segments, setSegments] = useState([]);
-    const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+    const currentSegmentIndex = useRef(0);
     const [startTime, setStartTime] = useState(null);
-    const [tempo, setTempo] = useState(null);
 
     useEffect(() => {
         // Fetch Spotify audio analysis when trackId changes
@@ -41,11 +48,16 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                 `https://api.spotify.com/v1/audio-analysis/${trackId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
-            const { track, segments } = response.data;
-            setTempo(track.tempo); // Set tempo here
-            setAudioFeatures(track);
-            setSegments(segments || []);
+
+            const analysis = response.data;
+
+            // Update states once, after all data is ready
+            setAudioFeatures(analysis.track);
+            setSegments(analysis.segments || []);
             setStartTime(Date.now());
+
+            console.log("Tempo:", analysis.track.tempo);
+            console.log("Audio Features:", analysis.track);
         } catch (error) {
             console.error("Error fetching Spotify audio analysis:", error);
             setAudioFeatures(null);
@@ -68,13 +80,10 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor("#ffffff");
-
+        containerRef.current.appendChild(renderer.domElement);
         if (!renderer) {
             console.error('Failed to initialize WebGL renderer.');
         }
-
-
-        containerRef.current.appendChild(renderer.domElement);
 
         // Create sphere geometry and material
         const geometry = new THREE.IcosahedronGeometry(20, 3);
@@ -95,12 +104,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         cameraRef.current = camera;
         rendererRef.current = renderer;
         sphereRef.current = sphere;
-        //console.log('Scene:', sceneRef.current);
-        //console.log('Camera:', cameraRef.current);
-        //console.log('Renderer:', rendererRef.current);
-        //console.log('Sphere:', sphereRef.current);
-
-
 
         // Handle window resize
         const handleResize = () => {
@@ -125,36 +128,22 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
         let animationFrameId;
 
-        //const bufferLength = analyser.frequencyBinCount;
-        //const dataArray = new Uint8Array(bufferLength);
-
         const animate = () => {
-
-            console.log('Animating...');
-
-
-            //analyser.getByteFrequencyData(dataArray)
-
-            // Calculate loudness
-            //let sum = 0;
-            //for (let i = 0; i < bufferLength; i++) {
-            //    const amplitude = (dataArray[i] - 128) / 128; // normalize to [-1, 1]
-            //    sum += amplitude * amplitude;
-            //}
-            //const rms = Math.sqrt(sum / bufferLength);
-            //const loudness = Math.pow(rms, 0.8); // Increase sensitivity
-
             if (!isPlaying || segments.length === 0) return;
 
-            const currentTime = (Date.now() - startTime) / 240;
-            const currentSegment = segments[currentSegmentIndex];
+            const currentTime = (Date.now() - startTime); // Adjust time scale as needed
+            const currentSegment = segments[currentSegmentIndex.current];
 
             if (currentSegment && currentTime > currentSegment.start) {
-                setCurrentSegmentIndex((prevIndex) => (prevIndex + 1) % segments.length);
+                currentSegmentIndex.current = (currentSegmentIndex.current + 1) % segments.length;
             }
 
             const loudness = currentSegment ? currentSegment.loudness_max : 0;
-            const timbre = currentSegment ? currentSegment.timbre[0] / 100 : 0; // Normalize the first timbre coefficient
+            const timbre = currentSegment ? currentSegment.timbre : [];
+
+            // Example timbre features: brightness and attack
+            const brightness = timbre[1] / 100; // Normalize brightness feature
+            const attack = timbre[3] / 100;     // Normalize attack feature
 
             if (sphereRef.current) {
                 // Rotate the sphere
@@ -162,8 +151,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                 sphereRef.current.rotation.y += 0.003;
                 sphereRef.current.rotation.z += 0.005;
 
-                // Warp the sphere based on loudness
-                warpSphere(sphereRef.current, loudness, timbre);
+                // Warp the sphere based on loudness, brightness, and attack
+                warpSphere(sphereRef.current, loudness, brightness, attack);
             }
 
             // Render the scene
@@ -179,86 +168,12 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
-    }, [audioContext, analyser, isPlaying, trackId, segments, currentSegmentIndex, startTime]);
-
-    /**useEffect(() => {
-        if (!analyser || !isPlaying) return;
-    
-        // Set up audio analysis
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-    
-        console.log("Data Array: " + dataArray);
-    
-        // Animation loop
-        const render = () => {
-            if (!isPlaying) return;
-    
-            // Get frequency data
-            analyser.getByteFrequencyData(dataArray);
-    
-    
-            // Calculate loudness
-            let sum = 0;
-            for (let i = 0; i < bufferLength; i++) {
-                const amplitude = (dataArray[i] - 128) / 128; // normalize to [-1, 1]
-                sum += amplitude * amplitude;
-            }
-            const rms = Math.sqrt(sum / bufferLength);
-            const loudness = Math.pow(rms, 0.8); // Increase sensitivity
-    
-            //console.log('Loudness:', loudness);
-    
-            if (sphereRef.current) {
-                // Rotate the sphere
-                sphereRef.current.rotation.x += 0.001;
-                sphereRef.current.rotation.y += 0.003;
-                sphereRef.current.rotation.z += 0.005;
-    
-                // Warp the sphere based on loudness
-                warpSphere(sphereRef.current, loudness * 12, loudness * 4);
-            }
-    
-            // Render the scene
-            if (rendererRef.current && sceneRef.current && cameraRef.current) {
-                rendererRef.current.render(sceneRef.current, cameraRef.current);
-            }
-            requestAnimationFrame(render);
-        };
-    
-        render();
-    }, [analyser, isPlaying]);**/
+    }, [audioContext, analyser, isPlaying, trackId, segments, startTime]);
 
 
-    //INDIVIDUAL FREQUENCY 
-    //// Split frequency data into lower and upper halves
-    //const lowerHalf = dataArray.slice(0, (dataArray.length / 2) - 1);
-    //const upperHalf = dataArray.slice((dataArray.length / 2) - 1, dataArray.length - 1);
 
-    //// Calculate max and average frequencies
-    //const lowerMax = Math.max(...lowerHalf);
-    //const upperAvg = upperHalf.reduce((sum, val) => sum + val, 0) / upperHalf.length;
-
-    //const lowerMaxFr = lowerMax / lowerHalf.length;
-    //const upperAvgFr = upperAvg / upperHalf.length;
-
-    //if (sphereRef.current) {
-    //    // Rotate the sphere
-    //    sphereRef.current.rotation.x += 0.001;
-    //    sphereRef.current.rotation.y += 0.003;
-    //    sphereRef.current.rotation.z += 0.005;
-
-    //    // Warp the sphere based on audio data
-    //    warpSphere(sphereRef.current, modulate(Math.pow(lowerMaxFr, 0.8), 0, 1, 0, 8), modulate(upperAvgFr, 0, 1, 0, 4));
-    //}
-
-
-    // Function to warp the sphere based on audio data
-    function warpSphere(mesh, loudness, timbre) {
-        console.log('Loudness:', loudness);
-        console.log('Timbre:', timbre);
-        console.log('Warping sphere with loudness:', loudness, 'and timbre:', timbre);
-
+    function warpSphere(mesh, loudness, brightness, attack) {
+        console.log('Warping sphere with loudness:', loudness, 'brightness:', brightness, 'and attack:', attack);
 
         if (!mesh.geometry.isBufferGeometry) {
             console.error("Expected BufferGeometry");
@@ -268,25 +183,32 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const positions = mesh.geometry.attributes.position;
         const count = positions.count;
 
+        // Modify scale sensitivity to loudness
+        const globalScale = modulate(loudness, -30, 0, 0.5, 1.5); // The sphere gets larger with higher loudness
+
+        // Increase noise impact with higher brightness and attack values
+        // Increase noise impact with higher brightness and attack values
+        const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0, 0.1); // Use absolute value for brightness
+        const attackImpact = modulate(Math.abs(attack), 0, 1, 0, 0.1);       // Use absolute value for attack
+        const time = window.performance.now();
+        const rf = 0.00001; // Frequency of noise over time
+        const amp = 5; // Amplitude of the noise
+
         for (let i = 0; i < count; i++) {
             const vertex = new THREE.Vector3();
             vertex.fromBufferAttribute(positions, i);
 
-            const offset = mesh.geometry.parameters.radius;
-            const amp = 5;
-            const time = window.performance.now();
             vertex.normalize();
-            const rf = 0.00001;
 
-            const loudnessImpact = 0.3; // Adjust this value between 0 and 1
-            const timbreImpact = 0.4;
-            const noiseImpact = 0.3; // Adjust this value between 0 and 1
+            // Adjust vertex distance based on loudness and noise
+            let distance = mesh.geometry.parameters.radius * globalScale +
+                (noise3D(vertex.x + time * rf * 4, vertex.y + time * rf * 6, vertex.z + time * rf * 7) * amp);
 
-            const distance = offset +
-                (loudness * loudnessImpact) +
-                (timbre * timbreImpact) +
-                (noise3D(vertex.x + time * rf * 4, vertex.y + time * rf * 6, vertex.z + time * rf * 7) * amp * noiseImpact);
+            // Further modify distance based on brightness and attack
+            distance += brightnessImpact;
+            distance -= attackImpact;
 
+            // Update vertex position
             vertex.multiplyScalar(distance);
 
             positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
@@ -296,12 +218,5 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         mesh.geometry.computeVertexNormals();
     }
 
-    return <View ref={containerRef} className="flex-1 order-1" />;
-}
-
-// Helper function to map a value from one range to another
-function modulate(val, minVal, maxVal, outMin, outMax) {
-    const fr = (val - minVal) / (maxVal - minVal);
-    const delta = outMax - outMin;
-    return outMin + (fr * delta);
+    return <View ref={containerRef} style={{ flex: 1 }} />;
 }

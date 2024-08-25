@@ -43,6 +43,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const loudnessBuffer = useRef([]);
     const BUFFER_SIZE = 1000; // Adjust this value to control the smoothing period
 
+    const [bassLoudness, setBassLoudness] = useState(0);
+
 
 
     useEffect(() => {
@@ -97,7 +99,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         }
 
         // Create sphere geometry and material
-        const geometry = new THREE.IcosahedronGeometry(20, 10);
+        const geometry = new THREE.IcosahedronGeometry(20, 20);
         const material = new THREE.MeshLambertMaterial({
             color: "#696969",
             wireframe: true
@@ -155,13 +157,21 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                     currentSegmentIndex.current = (currentSegmentIndex.current + 1) % segments.length;
                 }
 
-                const loudness = currentSegment ? currentSegment.loudness_max : 0;
                 const timbre = currentSegment ? currentSegment.timbre : [];
+                const loudness = currentSegment ? currentSegment.loudness_max : 0;
+                const timbreLoudness = timbre[0];
                 const brightness = timbre[1] / 100; // Normalize brightness feature
                 const flatness = timbre[2] / 100; // Normalize flatness feature
                 const attack = timbre[3] / 100;     // Normalize attack feature
+                const centroid = timbre[4] / 100;     // Normalize specteral centroid feature
+                const rolloff = timbre[11] / 100; // Assuming dimension 11 corresponds to spectral rolloff
 
-                //console.log(timbre);
+                // Calculate bass loudness
+                const bassFactor = 1 - (centroid + rolloff) * 0.5; // Adjust this factor as needed
+                const bassLoudness = timbreLoudness * bassFactor;
+                setBassLoudness(bassLoudness);
+
+                console.log(brightness);
 
                 // Update loudness buffer
                 loudnessBuffer.current.push(loudness);
@@ -180,7 +190,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                     sphereRef.current.rotation.z += 0.005;
 
                     // Warp the sphere based on loudness, brightness, and attack
-                    warpSphere(sphereRef.current, loudness, brightness, flatness, attack);
+                    warpSphere(sphereRef.current, loudness, brightness, flatness, attack, bassLoudness, centroid);
 
                     // Update light based on attack
                     updateLight(lightRef.current, attack);
@@ -205,8 +215,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
 
 
-    function warpSphere(mesh, averageLoudness, brightness, flatness, attack) {
-        console.log('Warping sphere with loudness:', averageLoudness, 'brightness:', brightness, 'and attack:', attack);
+    function warpSphere(mesh, loudness, brightness, flatness, attack, bassLoudness, centroid) {
+        //console.log('Warping sphere with loudness:', averageLoudness, 'brightness:', brightness, 'and attack:', attack);
 
         if (!mesh.geometry.isBufferGeometry) {
             console.error("Expected BufferGeometry");
@@ -217,7 +227,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const count = positions.count;
 
         // Modify scale sensitivity to loudness
-        const globalScale = modulate(averageLoudness, -30, 0, 2, 2.1); // The sphere gets larger with higher loudness
+        const globalScale = modulate(Math.abs(loudness), -30, 0, 1.75, 2.125); // The sphere gets larger with higher loudness
         const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0.5, 1); // Use absolute value for brightness
         const flatnessImpact = modulate(Math.abs(flatness), 0, 1, 0, 0.1); // Use absolute value
         const attackImpact = modulate(Math.abs(attack), 0, 1, 0.5, 1);       // Use absolute value for attack
@@ -235,10 +245,10 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             let distance = mesh.geometry.parameters.radius * globalScale;
 
             // Add brightness-based jaggedness
-            distance += (noise3D(vertex.x * 1.25, vertex.y * 1.25, vertex.z * 1.25) * amp) * Math.PI * brightnessImpact;
+            distance += (noise3D(vertex.x * 1.25, vertex.y * 1.25, vertex.z * 1.25) * amp) * Math.PI * centroid;
 
             // Add attack-based ripple effect
-            distance += attackImpact * Math.sin(time * rf * 500 + vertex.length() * Math.PI);
+            //distance += attackImpact * Math.sin(time * rf * 500 + vertex.length() * Math.PI);
 
             // Update vertex position
             vertex.multiplyScalar(distance);
@@ -250,15 +260,15 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         mesh.geometry.computeVertexNormals();
     }
 
-    function updateLight(light, attack) {
+    function updateLight(light, brightness) {
         if (!light) return;
 
         // Adjust light intensity based on attack
-        const lightIntensity = modulate(attack, 0, 1, 0.2, 2);
+        const lightIntensity = modulate(brightness, 0, 1, 0.2, 2);
         light.intensity = lightIntensity;
 
         // Optional: Adjust light color based on attack
-        const colorValue = modulate(attack, 0, 1, 0, 1);
+        const colorValue = modulate(brightness, 0, 1, 0, 1);
         light.color.setHSL(colorValue, 1, 0.5);
     }
 

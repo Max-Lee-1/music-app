@@ -5,6 +5,8 @@ import axios from 'axios';
 import * as THREE from 'three';
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
 
+// Another approach, bass hit, expand radius, high hit, warp viualiser
+
 // Create a simplex noise generator
 const simplex = new SimplexNoise();
 
@@ -33,6 +35,14 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const [segments, setSegments] = useState([]);
     const currentSegmentIndex = useRef(0);
     const [startTime, setStartTime] = useState(null);
+    const [smoothedLoudness, setSmoothedLoudness] = useState(0);
+    const [smoothedBrightness, setSmoothedBrightness] = useState(0);
+    const [smoothedAttack, setSmoothedAttack] = useState(0);
+    const [averageLoudness, setAverageLoudness] = useState(0);
+    const loudnessBuffer = useRef([]);
+    const BUFFER_SIZE = 1000; // Adjust this value to control the smoothing period
+
+
 
     useEffect(() => {
         // Fetch Spotify audio analysis when trackId changes
@@ -127,37 +137,52 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         if (!audioContext || !analyser || !trackId || !isPlaying) return;
 
         let animationFrameId;
+        let lastUpdateTime = 0;
+        const updateInterval = 32; // Update every 16ms (approx. 60fps)
 
         const animate = () => {
             if (!isPlaying || segments.length === 0) return;
 
             const currentTime = (Date.now() - startTime); // Adjust time scale as needed
-            const currentSegment = segments[currentSegmentIndex.current];
+            if (currentTime - lastUpdateTime >= updateInterval) {
+                lastUpdateTime = currentTime;
 
-            if (currentSegment && currentTime > currentSegment.start) {
-                currentSegmentIndex.current = (currentSegmentIndex.current + 1) % segments.length;
-            }
+                const currentSegment = segments[currentSegmentIndex.current];
 
-            const loudness = currentSegment ? currentSegment.loudness_max : 0;
-            const timbre = currentSegment ? currentSegment.timbre : [];
+                if (currentSegment && currentTime > currentSegment.start) {
+                    currentSegmentIndex.current = (currentSegmentIndex.current + 1) % segments.length;
+                }
 
-            // Example timbre features: brightness and attack
-            const brightness = timbre[1] / 100; // Normalize brightness feature
-            const attack = timbre[3] / 100;     // Normalize attack feature
+                const loudness = currentSegment ? currentSegment.loudness_max : 0;
+                const timbre = currentSegment ? currentSegment.timbre : [];
+                const brightness = timbre[1] / 100; // Normalize brightness feature
+                const flatness = timbre[2] / 100; // Normalize flatness feature
+                const attack = timbre[3] / 100;     // Normalize attack feature
 
-            if (sphereRef.current) {
-                // Rotate the sphere
-                sphereRef.current.rotation.x += 0.001;
-                sphereRef.current.rotation.y += 0.003;
-                sphereRef.current.rotation.z += 0.005;
+                // Update loudness buffer
+                loudnessBuffer.current.push(loudness);
+                if (loudnessBuffer.current.length > BUFFER_SIZE) {
+                    loudnessBuffer.current.shift();
+                }
 
-                // Warp the sphere based on loudness, brightness, and attack
-                warpSphere(sphereRef.current, loudness, brightness, attack);
-            }
+                // Calculate average loudness
+                const newAverageLoudness = loudnessBuffer.current.reduce((sum, val) => sum + val, 0) / loudnessBuffer.current.length;
+                setAverageLoudness(newAverageLoudness);
 
-            // Render the scene
-            if (rendererRef.current && sceneRef.current && cameraRef.current) {
-                rendererRef.current.render(sceneRef.current, cameraRef.current);
+                if (sphereRef.current) {
+                    // Rotate the sphere
+                    sphereRef.current.rotation.x += 0.001;
+                    sphereRef.current.rotation.y += 0.003;
+                    sphereRef.current.rotation.z += 0.005;
+
+                    // Warp the sphere based on loudness, brightness, and attack
+                    warpSphere(sphereRef.current, loudness, brightness, flatness, attack);
+                }
+
+                // Render the scene
+                if (rendererRef.current && sceneRef.current && cameraRef.current) {
+                    rendererRef.current.render(sceneRef.current, cameraRef.current);
+                }
             }
 
             animationFrameId = requestAnimationFrame(animate);
@@ -168,12 +193,12 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
-    }, [audioContext, analyser, isPlaying, trackId, segments, startTime]);
+    }, [audioContext, analyser, isPlaying, trackId, segments, startTime, , smoothedBrightness, smoothedAttack]);
 
 
 
-    function warpSphere(mesh, loudness, brightness, attack) {
-        console.log('Warping sphere with loudness:', loudness, 'brightness:', brightness, 'and attack:', attack);
+    function warpSphere(mesh, averageLoudness, brightness, flatness, attack) {
+        console.log('Warping sphere with loudness:', averageLoudness, 'brightness:', brightness, 'and attack:', attack);
 
         if (!mesh.geometry.isBufferGeometry) {
             console.error("Expected BufferGeometry");
@@ -184,15 +209,13 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const count = positions.count;
 
         // Modify scale sensitivity to loudness
-        const globalScale = modulate(loudness, -30, 0, 0.5, 1.5); // The sphere gets larger with higher loudness
-
-        // Increase noise impact with higher brightness and attack values
-        // Increase noise impact with higher brightness and attack values
-        const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0, 0.1); // Use absolute value for brightness
-        const attackImpact = modulate(Math.abs(attack), 0, 1, 0, 0.1);       // Use absolute value for attack
+        const globalScale = modulate(averageLoudness, -30, 0, 2, 2.25); // The sphere gets larger with higher loudness
+        const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0, 1); // Use absolute value for brightness
+        const flatnessImpact = modulate(Math.abs(flatness), 0, 1, 0, 0.1); // Use absolute value
+        const attackImpact = modulate(Math.abs(attack), 0, 1, 0, 1);       // Use absolute value for attack
         const time = window.performance.now();
         const rf = 0.00001; // Frequency of noise over time
-        const amp = 5; // Amplitude of the noise
+        const amp = 3; // Amplitude of the noise
 
         for (let i = 0; i < count; i++) {
             const vertex = new THREE.Vector3();
@@ -200,13 +223,14 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
             vertex.normalize();
 
-            // Adjust vertex distance based on loudness and noise
-            let distance = mesh.geometry.parameters.radius * globalScale +
-                (noise3D(vertex.x + time * rf * 4, vertex.y + time * rf * 6, vertex.z + time * rf * 7) * amp);
+            // Base distance modified by loudness
+            let distance = mesh.geometry.parameters.radius * globalScale;
 
-            // Further modify distance based on brightness and attack
-            distance += brightnessImpact;
-            distance -= attackImpact;
+            // Add brightness-based jaggedness
+            distance += brightnessImpact * noise3D(vertex.x * 20, vertex.y * 20, vertex.z * 20) * amp * 5;
+
+            // Add attack-based ripple effect
+            distance += attackImpact * Math.sin(time * rf * 500 + vertex.length()) * amp;
 
             // Update vertex position
             vertex.multiplyScalar(distance);

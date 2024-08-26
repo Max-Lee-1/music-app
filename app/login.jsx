@@ -47,7 +47,6 @@ const discovery = {
 export default function LoginScreen() {
   const [userData, setUserData] = useState(null);
   const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
-
   const [request, response, promptAsync] = useAuthRequest(
     {
       responseType: 'code',
@@ -79,7 +78,7 @@ export default function LoginScreen() {
 
   async function exchangeCodeForToken(code) {
     try {
-      const tokenResult = await exchangeCodeAsync(
+      const tokenResult = await AuthSession.exchangeCodeAsync(
         {
           clientId,
           code,
@@ -91,16 +90,19 @@ export default function LoginScreen() {
         discovery
       );
 
-      await AsyncStorage.setItem('token', tokenResult.accessToken);
-      const userData = await fetchAndSaveUserProfile(tokenResult.accessToken);
+      if (tokenResult.accessToken) {
+        await AsyncStorage.setItem('token', tokenResult.accessToken);
+        const userData = await fetchAndSaveUserProfile(tokenResult.accessToken);
 
-      if (userData) {
-        await loginAndSaveUser(tokenResult.accessToken, userData);
-        checkUserRole(userData);
-        // Navigate to the index page after successful authentication
-        router.replace('/');
+        if (userData) {
+          await loginAndSaveUser(tokenResult.accessToken, userData, tokenResult.expiresIn);
+          checkUserRole(userData);
+          router.replace('/');
+        } else {
+          console.error('Failed to fetch user data');
+        }
       } else {
-        console.error('Failed to fetch user data');
+        console.error('No access token received');
       }
     } catch (error) {
       console.error('Error exchanging code for token:', error);

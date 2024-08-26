@@ -12,6 +12,7 @@ const supabase = createClient(
 
 const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
+  const [tokenExpiration, setTokenExpiration] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [playlistTracks, setPlaylistTracks] = useState([]);
@@ -25,12 +26,48 @@ const useSpotifyAuth = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (token && tokenExpiration) {
+      const checkTokenExpiration = setInterval(() => {
+        if (Date.now() >= tokenExpiration) {
+          logout();
+        }
+      }, 60000); // 60000 = per min
+
+      return () => clearInterval(checkTokenExpiration);
+    }
+  }, [token, tokenExpiration]);
+
   const loadToken = async () => {
     try {
       const storedToken = await AsyncStorage.getItem("token");
-      if (storedToken) {
-        setToken(storedToken);
-        console.log("storedToken: " + storedToken);
+      const storedExpiration = await AsyncStorage.getItem("tokenExpiration");
+      if (storedToken && storedExpiration) {
+        const expirationTime = parseInt(storedExpiration, 10);
+        if (Date.now() < expirationTime) {
+          setToken(storedToken);
+          setTokenExpiration(expirationTime);
+          console.log("storedToken: " + storedToken);
+        } else {
+          console.log("Token has expired");
+          logout();
+        }
       }
     } catch (error) {
       console.error("Error loading token:", error);
@@ -72,10 +109,13 @@ const useSpotifyAuth = () => {
   };
 
   const logout = async () => {
+    console.log("Running Lougout()");
     try {
       await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("tokenExpiration");
       await AsyncStorage.removeItem("userData");
       setToken(null);
+      setTokenExpiration(null);
       setUserProfile(null);
       router.replace("/login");
     } catch (error) {
@@ -135,7 +175,7 @@ const useSpotifyAuth = () => {
     }
   };
 
-  const loginAndSaveUser = async (spotifyToken, spotifyProfile) => {
+  const loginAndSaveUser = async (spotifyToken, spotifyProfile, expiresIn) => {
     console.log("Attempting to save user. Token:", !!spotifyToken);
     console.log("Spotify Profile:", spotifyProfile);
 
@@ -143,8 +183,14 @@ const useSpotifyAuth = () => {
       console.error("Invalid Spotify profile or missing ID");
       return null;
     }
+
+    const expirationTime = Date.now() + expiresIn * 1000;
     setToken(spotifyToken);
+    setTokenExpiration(expirationTime);
     setUserProfile(spotifyProfile);
+
+    await AsyncStorage.setItem("token", spotifyToken);
+    await AsyncStorage.setItem("tokenExpiration", expirationTime.toString());
 
     // Save user to supabase
     const { data, error } = await supabase.from("users").upsert(

@@ -5,7 +5,7 @@ import { Link, router } from "expo-router";
 import "../constants/styles.css";
 import gradientDemo from "../assets/images/gradient-demo.png";
 import Setting from "../assets/icons_ver_1_png/setting.png"
-import List from "../assets/icons_ver_1_png/List.png"
+import List from "../assets/icons_ver_2_png/List.png"
 import Shuffle from "../assets/icons_ver_1_png/Shuffle.png";
 import Arrow from "../assets/icons_ver_1_png/Arrows.png";
 import Pause from "../assets/icons_ver_1_png/Pause.png";
@@ -16,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import useSpotifyAuth from './useSpotifyAuth.js';
 import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -29,17 +30,19 @@ export default function App() {
     loadToken();
     loadUserProfile();
   }, []);
-  return (
-    <>
-      <PlayerContext>
-        <StatusBar style="auto" />
-        <ImageBackground
+
+  /**<ImageBackground
           source={gradientDemo}
           style={{ width: '100%', height: '100%' }}
           resizeMode='cover'
-        >
-
-          <View className="flex-1 w-full pt-[5vh] px-[4vw]">
+        > 
+        */
+  return (
+    <>
+      <PlayerContext >
+        <StatusBar style="light" />
+        <SafeAreaView className="relative flex-1 w-full" style={{ background: "radial-gradient(#333333, #000000)" }} >
+          <View className="flex-1 pt-[5vh] px-[4vw] z-10">
             <View className="flex-row items-start justify-between">
               <TouchableOpacity onPress={() => setUserModalVisible(true)}>
 
@@ -58,10 +61,11 @@ export default function App() {
               </TouchableOpacity>
             </View>
           </View>
+          <SpotifyPlayback className="justify-end items-end inset-0 z-20" />
 
-          <SpotifyPlayback />
+        </SafeAreaView>
 
-        </ImageBackground>
+
         <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />
         <UserModal visible={userModalVisible} onClose={() => setUserModalVisible(false)} />
       </PlayerContext>

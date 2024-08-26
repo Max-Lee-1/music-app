@@ -94,16 +94,20 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         camera.position.z = 100;
         scene.add(camera);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const container = containerRef.current;
+        container.style.background = "transparent"; // Set background to transparent
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // Enable alpha channel for transparency
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor("#333333");
-        containerRef.current.appendChild(renderer.domElement);
+        renderer.setClearColor(0x000000, 0); // Clear color with alpha value 0 (fully transparent)
+        container.appendChild(renderer.domElement);
+
         if (!renderer) {
             console.error('Failed to initialize WebGL renderer.');
         }
 
         // Create sphere geometry and material
-        const geometry = new THREE.IcosahedronGeometry(20, 20);
+        const geometry = new THREE.IcosahedronGeometry(15, 25);
         const material = new THREE.MeshLambertMaterial({
             color: "#696969",
             wireframe: true,
@@ -236,7 +240,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const count = positions.count;
 
         // Modify scale sensitivity to loudness
-        const globalScale = modulate(Math.abs(loudness), -30, 0, 1.75, 2.125); // The sphere gets larger with higher loudness
+        const globalScale = modulate(loudness, -30, 0, 1.75, 2.125); // The sphere gets larger with higher loudness
         const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0.5, 1); // Use absolute value for brightness
         const flatnessImpact = modulate(Math.abs(flatness), 0, 1, 0, 0.1); // Use absolute value
         const attackImpact = modulate(Math.abs(attack), 0, 1, 0.5, 1);       // Use absolute value for attack
@@ -251,7 +255,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             vertex.normalize();
 
             // Base distance modified by loudness
-            let distance = mesh.geometry.parameters.radius * globalScale;
+            let distance = mesh.geometry.parameters.radius * globalScale * Math.PI / amp;
 
             // Add brightness-based jaggedness
             distance += (noise3D(vertex.x * 1.5, vertex.y * 1.5, vertex.z * 1.5) * centroid) * Math.PI * amp;
@@ -282,19 +286,25 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         light.color.setHSL(colorValue, 1, 0.5);
     }
 
+    let currentColor = new THREE.Color(0.5, 0.5, 0.5);
+
     function updateGlow(mesh, brightness) {
         if (!mesh || !mesh.material) return;
 
-        // Modulate emissive intensity based on brightness
-        const emissiveIntensity = modulate(brightness, 0, 1, 0.1, 0.25);
+        // Set emissive intensity directly
+        const emissiveIntensity = THREE.MathUtils.lerp(0.2, 0.3, brightness);
         mesh.material.emissiveIntensity = emissiveIntensity;
 
-        const fixeHue = 0;
-        // Optionally, adjust the emissive color based on brightness
-        const emissiveColorValue = modulate(brightness, 0, 1, 0.5, 0);
-        mesh.material.emissive = new THREE.Color(`rgb(${emissiveColorValue * 255}, ${emissiveColorValue * 255}, ${emissiveColorValue * 255})`);
+        // Calculate target color
+        const targetColorValue = THREE.MathUtils.lerp(0.4, 0.5, brightness);
+        const targetColor = new THREE.Color(targetColorValue, targetColorValue, targetColorValue);
+
+        // Smoothly interpolate current color towards target color
+        currentColor.lerp(targetColor, 0.1); // Adjust this value to control smoothness
+
+        // Apply the interpolated color
+        mesh.material.emissive.copy(currentColor);
     }
 
-
-    return <View ref={containerRef} style={{ flex: 1 }} />;
+    return <View ref={containerRef} style={{ position: "fixed", top: "0", background: "none" }} />;
 }

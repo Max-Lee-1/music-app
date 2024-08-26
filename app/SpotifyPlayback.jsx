@@ -3,11 +3,11 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { usePlayer } from "./PlayerContext";
 import useSpotifyAuth from "./useSpotifyAuth";
 import axios from 'axios';
-import Shuffle from "../assets/icons_ver_1_png/Shuffle.png";
-import Arrow from "../assets/icons_ver_1_png/Arrows.png";
-import Pause from "../assets/icons_ver_1_png/Pause.png";
-import Play from "../assets/icons_ver_1_png/Play.png";
-import Loop from "../assets/icons_ver_1_png/Loop.png";
+import Shuffle from "../assets/icons_ver_2_png/Shuffle.png";
+import Arrow from "../assets/icons_ver_2_png/Arrows.png";
+import Pause from "../assets/icons_ver_2_png/Pause.png";
+import Play from "../assets/icons_ver_2_png/Play.png";
+import Loop from "../assets/icons_ver_2_png/Loop.png";
 import AudioVisualizer from './AudioVisualizer';
 
 // Main SpotifyPlayback component
@@ -165,10 +165,13 @@ export default function SpotifyPlayback() {
   const handleTogglePlayPause = async () => {
     if (!player) return;
     try {
-      await player.togglePlay();
-      const newIsPlaying = !isPlaying;
-      setIsPlaying(newIsPlaying);
-      if (newIsPlaying) {
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/${isPlaying ? 'pause' : 'play'}?device_id=${deviceId}`,
+        {},
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      setIsPlaying(!isPlaying);
+      if (!isPlaying) {
         audioContext.current.resume();
       } else {
         audioContext.current.suspend();
@@ -229,7 +232,7 @@ export default function SpotifyPlayback() {
   if (!token) return null;
 
   return (
-    <View className="flex-1 ">
+    <View>
       <AudioVisualizer
         audioContext={audioContext}
         analyser={analyser}
@@ -257,9 +260,9 @@ export default function SpotifyPlayback() {
             </TouchableOpacity>
           </View>
         </View>
-        <Text>Spotify Player</Text>
+        <Text style={{ color: "#F2F2F2" }}>Spotify Player</Text>
         {currentTrack && (
-          <Text>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
+          <Text style={{ color: "#F2F2F2" }}>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
         )}
       </>
     </View>

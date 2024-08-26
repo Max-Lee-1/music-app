@@ -20,7 +20,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
 // const redirectUri = "http://localhost:8081/spotify-auth-callback"; //Local
-const redirectUri = "https://technify-b4ap64qdg-maxs-projects-f7c3cc13.vercel.app/spotify-auth-callback"
+const redirectUri = "https://technify-b4ap64qdg-maxs-projects-f7c3cc13.vercel.app/"
 
 console.log('Redirect URI:', redirectUri);
 const scopes = [

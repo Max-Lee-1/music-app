@@ -1,6 +1,18 @@
-{
-    "buildCommand": "expo build:web",
+  {
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/static-build",
+        "config": { "distDir": "dist" }
+      }
+    ],
+    "routes": [
+      { "handle": "filesystem" },
+      { "src": "/(.*)", "dest": "/index.html" }
+    ],
+    "build": "npx expo export --platform web",
     "outputDirectory": "web-build",
     "devCommand": "expo start --web",
     "framework": "create-react-app"
+
   }

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "music-app",
-    "slug": "music-app-slug",
-    "scheme": "music-app-scheme",
+    "name": "technify",
+    "slug": "technify-slug",
+    "scheme": "technify-scheme",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

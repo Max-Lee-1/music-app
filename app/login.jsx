@@ -20,10 +20,11 @@ WebBrowser.maybeCompleteAuthSession();
 
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
 // const redirectUri = "http://localhost:8081/spotify-auth-callback"; //Local
-const redirectUri = makeRedirectUri({
-  scheme: 'your-app-scheme',
-  path: 'spotify-auth-callback'
-});
+//const redirectUri = makeRedirectUri({
+//  scheme: 'technify-scheme',
+//  path: 'spotify-auth-callback'
+//});
+const redirectUri = "http://localhost:8081/spotify-auth-callback";
 const scopes = [
   'user-read-private',
   'user-read-email',
@@ -48,8 +49,10 @@ const discovery = {
 };
 
 export default function LoginScreen() {
+  console.log("Redirect URI" + redirectUri);
+
   const [userData, setUserData] = useState(null);
-  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole, exchangeCodeForToken } = useSpotifyAuth();
+  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole, exchangeCodeForToken, startAuth } = useSpotifyAuth();
   const [request, response, promptAsync] = useAuthRequest(
     {
       responseType: 'code',
@@ -74,7 +77,10 @@ export default function LoginScreen() {
   useEffect(() => {
     if (response?.type === 'success') {
       const { code } = response.params;
-      exchangeCodeForToken(code);
+      if (code) {
+        startAuth();
+      }
+      //exchangeCodeForToken(code);
     }
   }, [response]);
 

@@ -1,3 +1,4 @@
+//index
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
@@ -18,7 +19,7 @@ import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function App() {
+function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
@@ -73,3 +74,5 @@ export default function App() {
     </>
   );
 }
+
+export default App;

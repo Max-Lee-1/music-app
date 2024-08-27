@@ -240,8 +240,8 @@ export default function SpotifyPlayback() {
         isPlaying={isPlaying}
         token={token}
       />
-      <>
-        <View className="flex-1 justify-end items-end w-full pb-[5vh] px-[4vw]">
+      <View className="w-full pb-[5vh] px-[4vw]">
+        <View className="items-end justify-end ">
           <View className="flex-row items-start justify-between">
             <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
               <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
@@ -260,11 +260,15 @@ export default function SpotifyPlayback() {
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={{ color: "#F2F2F2" }}>Spotify Player</Text>
-        {currentTrack && (
-          <Text style={{ color: "#F2F2F2" }}>Now playing: {currentTrack.name} by {currentTrack.artists[0].name}</Text>
-        )}
-      </>
+        <View className="items-start self-center justify-end w-full ">
+
+          <Text style={{ color: "#F2F2F2" }}>Now Playing:</Text>
+          {currentTrack && (
+            <Text style={{ color: "#F2F2F2" }}>{currentTrack.name} by {currentTrack.artists[0].name}</Text>
+          )}
+        </View>
+
+      </View>
     </View>
   );
 }

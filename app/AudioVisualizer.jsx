@@ -41,7 +41,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const [smoothedAttack, setSmoothedAttack] = useState(0);
     const [averageLoudness, setAverageLoudness] = useState(0);
     const loudnessBuffer = useRef([]);
-    const BUFFER_SIZE = 5000; // Adjust this value to control the smoothing period
+    const BUFFER_SIZE = 7500; // Adjust this value to control the smoothing period
 
     // Buffers for different variables
     const brightnessBuffer = useRef([]);
@@ -240,7 +240,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const count = positions.count;
 
         // Modify scale sensitivity to loudness
-        const globalScale = modulate(loudness, -30, 0, 1.75, 2.125); // The sphere gets larger with higher loudness
+        const globalScale = modulate(loudness, -30, 0, 2, 2.5); // The sphere gets larger with higher loudness
         const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0.5, 1); // Use absolute value for brightness
         const flatnessImpact = modulate(Math.abs(flatness), 0, 1, 0, 0.1); // Use absolute value
         const attackImpact = modulate(Math.abs(attack), 0, 1, 0.5, 1);       // Use absolute value for attack
@@ -258,7 +258,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             let distance = mesh.geometry.parameters.radius * globalScale * Math.PI / amp;
 
             // Add brightness-based jaggedness
-            distance += (noise3D(vertex.x * 1.5, vertex.y * 1.5, vertex.z * 1.5) * centroid) * Math.PI * amp;
+            distance += (noise3D(vertex.x * 1.5, vertex.y * 1.5, vertex.z * 1.5) * ((centroid + attack) * 0.5)) * Math.PI * amp;
 
 
             // Add attack-based ripple effect

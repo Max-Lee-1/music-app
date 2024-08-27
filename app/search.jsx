@@ -70,8 +70,9 @@ const SearchModal = ({ visible, onClose }) => {
         const getNumColumns = (width) => {
             if (width >= 1024) return 10; // lg screens
             if (width >= 768) return 6;  // md screens
-            if (width >= 640) return 3;  // sm screens
-            return 2; // xs screens
+            if (width >= 640) return 5;  // sm screens
+            if (width >= 480) return 3;  // xs screens
+            return 2; // xxs screens
         };
 
         const numColumns = getNumColumns(window.width);
@@ -86,12 +87,12 @@ const SearchModal = ({ visible, onClose }) => {
                         />
                     )}
                 </TouchableOpacity>
-                <Text className="font-semibold text-center text-white truncate">{item.name}</Text>
+                <Text className="font-semibold text-center truncate" style={{ color: "#F2F2F2" }}>{item.name}</Text>
             </View>
         );
 
         return (
-            <View className="flex-1 bg-black" style={{ backgroundColor: 'transparent' }}>
+            <View className="flex-1">
                 <FlatList
                     data={userPlaylists.items}
                     renderItem={renderPlaylistItem}
@@ -99,39 +100,40 @@ const SearchModal = ({ visible, onClose }) => {
                     numColumns={numColumns}
                     key={numColumns}
                     className="flex-1"
-                    contentContainerClassName={{ backgroundColor: 'transparent' }}
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{ backgroundColor: "#111111" }}
                 />
             </View>
         );
     };
 
     const PlaylistContentScreen = () => (
-        <View className="flex-1">
+        <View className="flex-1" style={{ backgroundColor: "#111111" }}
+        >
             {selectedPlaylistId && playlistTracks && playlistTracks.length > 0 ? (
                 <FlatList
                     data={playlistTracks}
                     renderItem={renderTrackItem}
                     keyExtractor={(item) => item.id}
                     className="flex-1"
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{ backgroundColor: "#111111" }}
 
                 />
             ) : (
-                <Text className="mt-4 text-center text-white">Select a playlist to view tracks</Text>
+                <Text className="mt-4 text-center " style={{ color: "#F2F2F2" }}>Select a playlist to view tracks</Text>
             )}
         </View>
     );
 
     const QueueScreen = () => (
-        <View className="flex-1">
+        <View className="flex-1" style={{ backgroundColor: "#111111" }}
+        >
             {queue && queue.length > 0 ? (
                 <FlatList
                     data={queue}
                     renderItem={renderQueueItem}
                     keyExtractor={(item, index) => `${item.id}-${index}`}
                     className="flex-1"
-                    style={{ backgroundColor: 'transparent' }}
+                    style={{ backgroundColor: "#111111" }}
 
                 />
             ) : (
@@ -147,7 +149,7 @@ const SearchModal = ({ visible, onClose }) => {
             visible={visible}
             onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black bg-opacity-50 backdrop-blur-sm"> {/* Changed to 50% opacity */}
+            <View className="flex-1 backdrop-blur-sm"> {/* Changed to 50% opacity */}
                 <View className="flex-row justify-end pt-[5vh] px-[4vw]">
                     <TouchableOpacity onPress={onClose}>
                         <Image source={Delete} style={{ width: '2rem', height: '2rem' }} /> {/* Reduced close icon size */}
@@ -165,7 +167,9 @@ const SearchModal = ({ visible, onClose }) => {
 
                         }}
                     >
-                        <Tab.Screen name="Playlists" component={PlaylistScreen} />
+                        <Tab.Screen options={{
+                            headerStyle: { backgroundColor: 'transparent' },
+                        }} name="Playlists" component={PlaylistScreen} />
                         <Tab.Screen name="Tracks" component={PlaylistContentScreen} />
                         <Tab.Screen name="Queue" component={QueueScreen} />
                     </Tab.Navigator>

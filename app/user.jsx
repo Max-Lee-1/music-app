@@ -48,7 +48,7 @@ const UserModal = ({ visible, onClose }) => {
                                         <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} onPress={onClose} />
                                     </TouchableOpacity>
                                 )}
-                                <Text className="self-center pl-4 text-xl font-bold">
+                                <Text className="self-center pl-4 text-xl font-bold" style={{ color: "#F2F2F2" }}>
                                     Hi, {userProfile && userProfile.display_name ? userProfile.display_name : 'User'}!
                                 </Text>
                             </View>
@@ -58,8 +58,8 @@ const UserModal = ({ visible, onClose }) => {
                             </TouchableOpacity>
                         </View>
                         <span className='h-10' />
-                        <View className="flex-row items-end self-end">
-                            <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg bg-slate-950'>Logout</TouchableOpacity>
+                        <View className="flex-row items-end self-end" >
+                            <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg' style={{ backgroundColor: "#222222" }}>Logout</TouchableOpacity>
                         </View>
                     </>
                 )}

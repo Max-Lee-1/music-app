@@ -289,7 +289,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         const targetColor = new THREE.Color(targetColorValue, targetColorValue, targetColorValue);
 
         // Smoothly interpolate current color towards target color
-        currentColor.lerp(targetColor, 0.1); // Adjust this value to control smoothness
+        currentColor.lerp(targetColor, 0.25); // Adjust this value to control smoothness
 
         // Apply the interpolated color
         mesh.material.emissive.copy(currentColor);

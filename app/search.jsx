@@ -36,16 +36,16 @@ const SearchModal = ({ visible, onClose }) => {
 
     const renderTrackItem = ({ item }) => (
         <TouchableOpacity className="flex flex-row items-center justify-between p-2 px-[2vw] border-b border-gray-700">
-            <Text className="text-white flex-1 mr-2 truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
-            <TouchableOpacity onPress={() => addToQueue(item)} className="bg-gray-700 px-2 py-1 rounded">
-                <Text className="text-white text-xs">Add</Text>
+            <Text className="flex-1 mr-2 text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
+            <TouchableOpacity onPress={() => addToQueue(item)} className="px-2 py-1 bg-gray-700 rounded">
+                <Text className="text-xs text-white">Add</Text>
             </TouchableOpacity>
         </TouchableOpacity>
     );
 
     const renderQueueItem = ({ item, index }) => (
         <View className="flex flex-row items-center justify-between p-1 px-[2vw] border-b border-gray-700">
-            <Text className="text-white flex-1 mr-2 truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
+            <Text className="flex-1 mr-2 text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
             <View className="flex flex-row">
                 <TouchableOpacity onPress={() => currentTrack?.id === item.id ? togglePlayPause() : playTrack(item, index)} className="mr-2">
                     <Image
@@ -78,7 +78,7 @@ const SearchModal = ({ visible, onClose }) => {
 
         const renderPlaylistItem = ({ item }) => (
             <View className={`flex-1 m-1 ${numColumns > 2 ? 'max-w-[33%]' : 'max-w-[50%]'} `}>
-                <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="aspect-square p-2">
+                <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="p-2 aspect-square">
                     {item.images && item.images.length > 0 && (
                         <Image
                             source={{ uri: item.images[0].url }}
@@ -86,7 +86,7 @@ const SearchModal = ({ visible, onClose }) => {
                         />
                     )}
                 </TouchableOpacity>
-                <Text className="text-white font-semibold truncate text-center">{item.name}</Text>
+                <Text className="font-semibold text-center text-white truncate">{item.name}</Text>
             </View>
         );
 
@@ -118,7 +118,7 @@ const SearchModal = ({ visible, onClose }) => {
 
                 />
             ) : (
-                <Text className="text-white text-center mt-4">Select a playlist to view tracks</Text>
+                <Text className="mt-4 text-center text-white">Select a playlist to view tracks</Text>
             )}
         </View>
     );
@@ -135,7 +135,7 @@ const SearchModal = ({ visible, onClose }) => {
 
                 />
             ) : (
-                <Text className="text-white text-center mt-4">Queue is empty</Text>
+                <Text className="mt-4 text-center text-white">Queue is empty</Text>
             )}
         </View>
     );

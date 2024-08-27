@@ -18,7 +18,7 @@ import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-function App() {
+export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
@@ -73,5 +73,3 @@ function App() {
     </>
   );
 }
-
-export default App();

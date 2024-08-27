@@ -44,7 +44,7 @@ const discovery = {
   tokenEndpoint: 'https://accounts.spotify.com/api/token',
 };
 
-function LoginScreen() {
+export default function LoginScreen() {
   const [userData, setUserData] = useState(null);
   const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
   const [request, response, promptAsync] = useAuthRequest(
@@ -176,5 +176,3 @@ function LoginScreen() {
     </>
   );
 }
-
-export default LoginScreen();

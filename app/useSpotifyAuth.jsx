@@ -1,4 +1,4 @@
-// useSpotifyAuth.js
+// useSpotifyAuth.jsx
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";

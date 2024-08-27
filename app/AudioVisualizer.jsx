@@ -5,8 +5,6 @@ import axios from 'axios';
 import * as THREE from 'three';
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
 
-// Another approach, bass hit, expand radius, high hit, warp viualiser
-
 // Create a simplex noise generator
 const simplex = new SimplexNoise();
 
@@ -46,10 +44,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     // Buffers for different variables
     const brightnessBuffer = useRef([]);
     const attackBuffer = useRef([]);
-
     const [bassLoudness, setBassLoudness] = useState(0);
-
-
 
     useEffect(() => {
         // Fetch Spotify audio analysis when trackId changes
@@ -202,12 +197,9 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
                     // Warp the sphere based on loudness, brightness, and attack
                     warpSphere(sphereRef.current, loudness, brightness, flatness, attack, bassLoudness, centroid);
-
                     // Update light based on attack
-                    //updateLight(lightRef.current, attack);
+                    // updateLight(lightRef.current, attack);
                     updateGlow(sphereRef.current, brightness);
-
-
                 }
 
                 // Render the scene
@@ -225,8 +217,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             cancelAnimationFrame(animationFrameId);
         };
     }, [audioContext, analyser, isPlaying, trackId, segments, startTime, , smoothedBrightness, smoothedAttack]);
-
-
 
     function warpSphere(mesh, loudness, brightness, flatness, attack, bassLoudness, centroid) {
         //console.log('Warping sphere with loudness:', averageLoudness, 'brightness:', brightness, 'and attack:', attack);
@@ -259,7 +249,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
             // Add brightness-based jaggedness
             distance += (noise3D(vertex.x * 1.5, vertex.y * 1.5, vertex.z * 1.5) * ((centroid + attack) * 0.5)) * Math.PI * amp;
-
 
             // Add attack-based ripple effect
             //distance += attackImpact * Math.sin( time * rf * 500 + vertex.length() * Math.PI);

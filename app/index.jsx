@@ -1,3 +1,4 @@
+// index.jsx
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
@@ -13,7 +14,7 @@ import Loop from "../assets/icons_ver_1_png/Loop.png";
 import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import useSpotifyAuth from './useSpotifyAuth.js';
+import useSpotifyAuth from './useSpotifyAuth';
 import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,7 +46,6 @@ export default function App() {
           <View className="flex-1 pt-[5vh] px-[4vw] z-10">
             <View className="flex-row items-start justify-between">
               <TouchableOpacity onPress={() => setUserModalVisible(true)}>
-
                 {userProfile && userProfile.images && userProfile.images[0] ? (
                   <Image
                     source={{ uri: userProfile.images[0].url }}
@@ -62,10 +62,7 @@ export default function App() {
             </View>
           </View>
           <SpotifyPlayback className="inset-0 z-20 items-end justify-end" />
-
         </SafeAreaView>
-
-
         <SearchModal visible={searchModalVisible} onClose={() => setSearchModalVisible(false)} />
         <UserModal visible={userModalVisible} onClose={() => setUserModalVisible(false)} />
       </PlayerContext>

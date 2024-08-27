@@ -1,3 +1,4 @@
+// SpotifyPlayback.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { usePlayer } from "./PlayerContext";
@@ -243,9 +244,6 @@ export default function SpotifyPlayback() {
       <View className="w-full pb-[5vh] px-[4vw]">
         <View className="items-end justify-end ">
           <View className="flex-row items-start justify-between">
-            <TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
-              <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
-            </TouchableOpacity>
             <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
               <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
             </TouchableOpacity>
@@ -254,9 +252,6 @@ export default function SpotifyPlayback() {
             </TouchableOpacity>
             <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
               <Image source={Arrow} style={{ width: 28, height: 28 }} />
-            </TouchableOpacity>
-            <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
-              <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
             </TouchableOpacity>
           </View>
         </View>
@@ -271,4 +266,12 @@ export default function SpotifyPlayback() {
       </View>
     </View>
   );
+  /**<TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
+              <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
+              <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
+            </TouchableOpacity>
+             */
 }

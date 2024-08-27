@@ -1,9 +1,10 @@
+// search.jsx
 import React, { useEffect, useState } from 'react';
 import { ScrollView, Modal, View, Text, Pressable, Image, FlatList, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { usePlayer } from './PlayerContext';
-import useSpotifyAuth from './useSpotifyAuth.js';
+import useSpotifyAuth from './useSpotifyAuth';
 import Delete from "../assets/icons_ver_2_png/Delete.png";
 import Pause from "../assets/icons_ver_2_png/Pause.png";
 import Play from "../assets/icons_ver_2_png/Play.png";
@@ -149,10 +150,10 @@ const SearchModal = ({ visible, onClose }) => {
             visible={visible}
             onRequestClose={onClose}
         >
-            <View className="flex-1 backdrop-blur-sm"> {/* Changed to 50% opacity */}
+            <View className="flex-1 backdrop-blur-sm">
                 <View className="flex-row justify-end pt-[5vh] px-[4vw]">
                     <TouchableOpacity onPress={onClose}>
-                        <Image source={Delete} style={{ width: '2rem', height: '2rem' }} /> {/* Reduced close icon size */}
+                        <Image source={Delete} style={{ width: '2rem', height: '2rem' }} />
                     </TouchableOpacity>
                 </View>
                 <NavigationContainer

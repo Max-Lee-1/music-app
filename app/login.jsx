@@ -1,4 +1,4 @@
-// screens/LoginScreen.js
+// login.jsx
 import React, { useEffect, useState } from 'react';
 import "../constants/styles.css";
 import { View, Text, Button, ImageBackground, Pressable } from 'react-native';
@@ -162,7 +162,12 @@ export default function LoginScreen() {
             disabled={!request}
             className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
             Sign in with Spotify</Pressable>
-          {userProfile && (
+
+        </View>
+      </ImageBackground>
+    </>
+  );
+  /**{userProfile && (
             <Pressable
               className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
               Sign in as {userProfile.display_name || 'User'}
@@ -170,9 +175,5 @@ export default function LoginScreen() {
           )}
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Google</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Facebook</Pressable>
-          <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Apple</Pressable>
-        </View>
-      </ImageBackground>
-    </>
-  );
+          <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Apple</Pressable> */
 }

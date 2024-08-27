@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, Redirect } from "expo-router";
 import "../constants/styles.css";
 import gradientDemo from "../assets/images/gradient-demo.png";
 import Setting from "../assets/icons_ver_1_png/setting.png"

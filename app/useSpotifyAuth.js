@@ -55,6 +55,8 @@ const useSpotifyAuth = () => {
   }, [token, tokenExpiration]);
 
   const loadToken = async () => {
+    console.log("Initiate loadtoken");
+
     try {
       const storedToken = await AsyncStorage.getItem("token");
       const storedExpiration = await AsyncStorage.getItem("tokenExpiration");
@@ -75,6 +77,8 @@ const useSpotifyAuth = () => {
   };
 
   const loadUserProfile = async () => {
+    console.log("Initiate load user profile");
+
     try {
       const userProfileString = await AsyncStorage.getItem("userData");
       if (userProfileString) {

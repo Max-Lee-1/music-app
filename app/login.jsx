@@ -61,6 +61,8 @@ export default function LoginScreen() {
   useEffect(() => {
     console.log("RedirectURI: " + redirectUri);
     const initializeAuth = async () => {
+      console.log("Initiate Auth");
+
       await loadToken();
       await loadUserProfile();
       await checkExistingUser();
@@ -71,13 +73,16 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (response?.type === 'success') {
+      console.log("Success");
       const { code } = response.params;
+      console.log("Response.params " + code)
       exchangeCodeForToken(code);
     }
   }, [response]);
 
 
   async function exchangeCodeForToken(code) {
+    console.log("Initiate Exchange Code");
     try {
       const tokenResult = await AuthSession.exchangeCodeAsync(
         {
@@ -127,6 +132,8 @@ export default function LoginScreen() {
   }
 
   async function checkExistingUser() {
+    console.log("Initiate check user exist");
+
     const storedToken = await AsyncStorage.getItem('token');
     const storedUserData = await AsyncStorage.getItem('userData');
 

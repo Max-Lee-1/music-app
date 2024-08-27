@@ -50,6 +50,7 @@
     "react-native-screens": "3.31.1",
     "react-native-tab-view": "^3.5.2",
     "react-native-web": "^0.19.12",
+    "react-router-dom": "^6.26.1",
     "react-spotify-web-playback": "^0.14.4",
     "react-three-fiber": "^6.0.13",
     "simplex-noise": "^4.0.3",

@@ -1,4 +1,3 @@
-//index
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
 import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
@@ -19,7 +18,7 @@ import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-function App() {
+export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
   const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
@@ -62,7 +61,7 @@ function App() {
               </TouchableOpacity>
             </View>
           </View>
-          <SpotifyPlayback className="justify-end items-end inset-0 z-20" />
+          <SpotifyPlayback className="inset-0 z-20 items-end justify-end" />
 
         </SafeAreaView>
 
@@ -74,5 +73,3 @@ function App() {
     </>
   );
 }
-
-export default App;

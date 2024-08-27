@@ -20,11 +20,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
 // const redirectUri = "http://localhost:8081/spotify-auth-callback"; //Local
-//const redirectUri = makeRedirectUri({
-//  scheme: 'technify-scheme',
-//  path: 'spotify-auth-callback'
-//});
-const redirectUri = "http://localhost:8081/spotify-auth-callback";
+export const redirectUri = `${AuthSession.makeRedirectUri({ useProxy: true })}/spotify-auth-callback`;
 const scopes = [
   'user-read-private',
   'user-read-email',
@@ -49,10 +45,8 @@ const discovery = {
 };
 
 export default function LoginScreen() {
-  console.log("Redirect URI" + redirectUri);
-
   const [userData, setUserData] = useState(null);
-  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole, exchangeCodeForToken, startAuth } = useSpotifyAuth();
+  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
   const [request, response, promptAsync] = useAuthRequest(
     {
       responseType: 'code',
@@ -64,7 +58,8 @@ export default function LoginScreen() {
     discovery
   );
 
-  /**useEffect(() => {
+  useEffect(() => {
+    console.log("RedirectURI: " + redirectUri);
     const initializeAuth = async () => {
       await loadToken();
       await loadUserProfile();
@@ -72,20 +67,17 @@ export default function LoginScreen() {
 
     };
     initializeAuth();
-  }, []);*/
+  }, []);
 
   useEffect(() => {
     if (response?.type === 'success') {
       const { code } = response.params;
-      if (code) {
-        startAuth();
-      }
-      //exchangeCodeForToken(code);
+      exchangeCodeForToken(code);
     }
   }, [response]);
 
 
-  /*async function exchangeCodeForToken(code) {
+  async function exchangeCodeForToken(code) {
     try {
       const tokenResult = await AuthSession.exchangeCodeAsync(
         {
@@ -116,7 +108,23 @@ export default function LoginScreen() {
     } catch (error) {
       console.error('Error exchanging code for token:', error);
     }
-  }*/
+  }
+
+  async function fetchAndSaveUser(accessToken) {
+    try {
+      const response = await fetch('https://api.spotify.com/v1/me', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      console.log("Data: " + data)
+      setUserData(data);
+      await AsyncStorage.setItem("userData", JSON.stringify(data));
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }
 
   async function checkExistingUser() {
     const storedToken = await AsyncStorage.getItem('token');
@@ -148,12 +156,7 @@ export default function LoginScreen() {
             disabled={!request}
             className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
             Sign in with Spotify</Pressable>
-
-        </View>
-      </ImageBackground>
-    </>
-  );
-  /**{userProfile && (
+          {userProfile && (
             <Pressable
               className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">
               Sign in as {userProfile.display_name || 'User'}
@@ -161,5 +164,9 @@ export default function LoginScreen() {
           )}
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Google</Pressable>
           <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Facebook</Pressable>
-          <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Apple</Pressable> */
+          <Pressable className="w-[25vw] border h-[5vh] text-black text-center border-white bg-white font-bold justify-center rounded-2xl drop-shadow-lg my-4">Sign in with Apple</Pressable>
+        </View>
+      </ImageBackground>
+    </>
+  );
 }

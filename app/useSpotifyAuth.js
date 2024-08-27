@@ -1,29 +1,14 @@
+// useSpotifyAuth.js
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
-import * as AuthSession from "expo-auth-session";
-import { ResponseType } from "expo-auth-session";
-import * as Crypto from "expo-crypto";
 
-// Supabase client setup
 const supabase = createClient(
   "https://jbeycklmkrjxlttwtmkb.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZXlja2xta3JqeGx0dHd0bWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5OTQ3MjAsImV4cCI6MjAzODU3MDcyMH0.xix1tPCFdcPXCkmvrFANHKSNXWetWEzJBnqpQ9sDtoQ"
 );
-
-const clientId = "990510f4dd5f44e399690dfcde5b5828";
-
-const redirectUri =
-  process.env.NODE_ENV === "production"
-    ? "https://technify-b4ap64qdg-maxs-projects-f7c3cc13.vercel.app/spotify-auth-callback"
-    : "http://localhost:8081/spotify-auth-callback";
-
-const discovery = {
-  authorizationEndpoint: "https://accounts.spotify.com/authorize",
-  tokenEndpoint: "https://accounts.spotify.com/api/token",
-};
 
 const useSpotifyAuth = () => {
   const [token, setToken] = useState(null);
@@ -32,8 +17,6 @@ const useSpotifyAuth = () => {
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const loadData = async () => {
@@ -65,125 +48,11 @@ const useSpotifyAuth = () => {
         if (Date.now() >= tokenExpiration) {
           logout();
         }
-      }, 60000); // 60000 = per minute
+      }, 60000); // 60000 = per min
 
       return () => clearInterval(checkTokenExpiration);
     }
   }, [token, tokenExpiration]);
-
-  // Helper functions
-  const generateRandomString = (length) => {
-    const possible =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const values = crypto.getRandomValues(new Uint8Array(length));
-    return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-  };
-
-  const sha256 = async (plain) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(plain);
-    return crypto.subtle.digest("SHA-256", data);
-  };
-
-  const base64encode = (input) => {
-    return btoa(String.fromCharCode(...new Uint8Array(input)))
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
-  };
-
-  const startAuth = async () => {
-    if (isAuthenticating) return;
-    setIsAuthenticating(true);
-    try {
-      const codeVerifier = generateRandomString(64);
-      const hashed = await sha256(codeVerifier);
-      const codeChallenge = base64encode(hashed);
-
-      await AsyncStorage.setItem("codeVerifier", codeVerifier);
-
-      const authRequest = new AuthSession.AuthRequest({
-        clientId,
-        responseType: ResponseType.Code,
-        scopes: [
-          "user-read-private",
-          "user-read-email",
-          "user-library-read",
-          "user-read-recently-played",
-          "user-top-read",
-          "playlist-read-private",
-          "playlist-read-collaborative",
-          "playlist-modify-public",
-          "user-read-playback-state",
-          "user-modify-playback-state",
-          "streaming",
-          "user-read-currently-playing",
-        ],
-        redirectUri,
-        code_challenge: codeChallenge,
-        code_challenge_method: "S256",
-      });
-
-      try {
-        const result = await authRequest.promptAsync(discovery);
-
-        if (result.type === "success" && result.params.code) {
-          const storedCodeVerifier = await AsyncStorage.getItem("codeVerifier");
-          await exchangeCodeForToken(result.params.code, storedCodeVerifier);
-        } else {
-          console.error("Authentication failed:", result);
-        }
-      } catch (error) {
-        console.error("Error during authentication:", error);
-      }
-    } catch (error) {
-      console.error("Error during authentication:", error);
-    } finally {
-      setIsAuthenticating(false);
-    }
-  };
-
-  const exchangeCodeForToken = async (code, codeVerifier) => {
-    try {
-      const tokenResult = await AuthSession.exchangeCodeAsync(
-        {
-          clientId,
-          code,
-          redirectUri,
-          extraParams: {
-            code_verifier: codeVerifier,
-          },
-        },
-        discovery
-      );
-
-      if (tokenResult.accessToken) {
-        await AsyncStorage.setItem("token", tokenResult.accessToken);
-        const expirationTime = Date.now() + tokenResult.expiresIn * 1000;
-        await AsyncStorage.setItem(
-          "tokenExpiration",
-          expirationTime.toString()
-        );
-        const userData = await fetchAndSaveUserProfile(tokenResult.accessToken);
-
-        if (userData) {
-          await loginAndSaveUser(
-            tokenResult.accessToken,
-            userData,
-            tokenResult.expiresIn
-          );
-          router.replace("/");
-        } else {
-          throw new Error("Failed to fetch user data");
-        }
-      } else {
-        throw new Error("No access token received");
-      }
-    } catch (error) {
-      console.error("Error exchanging code for token:", error);
-      throw error;
-    }
-  };
 
   const loadToken = async () => {
     try {
@@ -194,7 +63,9 @@ const useSpotifyAuth = () => {
         if (Date.now() < expirationTime) {
           setToken(storedToken);
           setTokenExpiration(expirationTime);
+          console.log("storedToken: " + storedToken);
         } else {
+          console.log("Token has expired");
           logout();
         }
       }
@@ -209,6 +80,10 @@ const useSpotifyAuth = () => {
       if (userProfileString) {
         const userProfileData = JSON.parse(userProfileString);
         setUserProfile(userProfileData);
+        console.log("Stored user profile:", userProfileData);
+        return;
+      } else {
+        console.log("No stored user profile found");
       }
     } catch (error) {
       console.error("Error loading userProfile:", error);
@@ -234,6 +109,7 @@ const useSpotifyAuth = () => {
   };
 
   const logout = async () => {
+    console.log("Running Lougout()");
     try {
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("tokenExpiration");
@@ -248,42 +124,124 @@ const useSpotifyAuth = () => {
   };
 
   const getUserPlaylists = async () => {
-    try {
-      const accessToken = await AsyncStorage.getItem("token");
-      if (!accessToken || !userProfile?.id) {
-        console.error("No access token or user profile found");
-        return;
-      }
-      const userId = userProfile.id;
-      const response = await axios.get(
-        `https://api.spotify.com/v1/users/${userId}/playlists`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      setUserPlaylists(response.data.items);
-    } catch (err) {
-      console.error("Error fetching playlists:", err.message);
-    }
-  };
-
-  const getPlaylistTracks = async (playlistId) => {
+    console.log("running getUserPlaylist");
     try {
       const accessToken = await AsyncStorage.getItem("token");
       if (!accessToken) {
         console.error("No access token found");
         return;
       }
-      const response = await axios.get(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      setPlaylistTracks(response.data.items.map((item) => item.track));
-      setSelectedPlaylistId(playlistId);
+      if (!userProfile || !userProfile.id) {
+        console.error("User profile not loaded");
+        return;
+      }
+      const userId = userProfile.id;
+      console.log("User Id:", userId);
+
+      const response = await axios({
+        method: "get",
+        url: `https://api.spotify.com/v1/users/${userId}/playlists`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const userPlaylists = response.data;
+      setUserPlaylists(userPlaylists);
+      console.log("Playlists fetched:", userPlaylists.items.length);
     } catch (err) {
-      console.error("Error fetching playlist tracks:", err.message);
+      console.log("Error fetching playlists:", err.message);
+    }
+  };
+
+  const getPlaylistTracks = async (playlistId) => {
+    const accessToken = await AsyncStorage.getItem("token");
+    console.log("running getPlaylistTracks for playlist:", playlistId);
+
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const tracks = response.data.items.map((item) => item.track);
+      setPlaylistTracks(tracks);
+      setSelectedPlaylistId(playlistId);
+      console.log("Tracks fetched:", tracks.length);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const loginAndSaveUser = async (spotifyToken, spotifyProfile, expiresIn) => {
+    console.log("Attempting to save user. Token:", !!spotifyToken);
+    console.log("Spotify Profile:", spotifyProfile);
+
+    if (!spotifyProfile || !spotifyProfile.id) {
+      console.error("Invalid Spotify profile or missing ID");
+      return null;
+    }
+
+    const expirationTime = Date.now() + expiresIn * 1000;
+    setToken(spotifyToken);
+    setTokenExpiration(expirationTime);
+    setUserProfile(spotifyProfile);
+
+    await AsyncStorage.setItem("token", spotifyToken);
+    await AsyncStorage.setItem("tokenExpiration", expirationTime.toString());
+
+    // Save user to supabase
+    const { data, error } = await supabase.from("users").upsert(
+      {
+        spotify_id: spotifyProfile.id,
+        email: spotifyProfile.email,
+        role: "admin", // Default role
+      },
+      { onConflict: "spotify_id" }
+    );
+
+    if (error) {
+      console.error("Error saving user to Supabase:", error);
+      console.error("Error details:", error.message, error.details);
+    } else if (data) {
+      console.log("User successfully saved to Supabase:", data);
+    }
+
+    // Check and return the user role
+    return await checkUserRole(spotifyProfile);
+  };
+
+  const checkUserRole = async (spotifyProfile) => {
+    if (!spotifyProfile.id) {
+      console.log("spotify id: " + spotifyProfile.id);
+      console.error("Spotify ID not provided");
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("role")
+        .eq("spotify_id", spotifyProfile.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user role:", error);
+        return null;
+      }
+
+      if (!data) {
+        console.log("User not found in database");
+        return null;
+      }
+
+      console.log("User role fetched:", data.role);
+      return data.role;
+    } catch (error) {
+      console.error("Unexpected error in checkUserRole:", error);
+      return null;
     }
   };
 
@@ -293,10 +251,15 @@ const useSpotifyAuth = () => {
     userPlaylists,
     playlistTracks,
     selectedPlaylistId,
-    startAuth,
     logout,
+    loadToken,
+    loadUserProfile,
+    fetchAndSaveUserProfile,
     getUserPlaylists,
     getPlaylistTracks,
+    setSelectedPlaylistId,
+    loginAndSaveUser,
+    checkUserRole,
   };
 };
 

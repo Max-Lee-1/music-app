@@ -62,7 +62,6 @@ export default function LoginScreen() {
     console.log("RedirectURI: " + redirectUri);
     const initializeAuth = async () => {
       console.log("Initiate Auth");
-
       await loadToken();
       await loadUserProfile();
       await checkExistingUser();

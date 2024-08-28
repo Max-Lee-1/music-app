@@ -4,7 +4,7 @@ import { ScrollView, Modal, View, Text, Pressable, Image, FlatList, TouchableOpa
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { usePlayer } from './PlayerContext';
-import useSpotifyAuth from './useSpotifyAuth';
+import useSpotifyAuth from './useSpotifyAuth.jsx';
 import Delete from "../assets/icons_ver_2_png/Delete.png";
 import Pause from "../assets/icons_ver_2_png/Pause.png";
 import Play from "../assets/icons_ver_2_png/Play.png";

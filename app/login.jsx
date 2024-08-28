@@ -11,7 +11,7 @@ import axios from 'axios';
 import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-session';
 import * as Random from 'expo-random';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useSpotifyAuth from './useSpotifyAuth';
+import useSpotifyAuth from './useSpotifyAuth.jsx';
 
 
 // ensures  any open web browser session is properly closed 

@@ -1,6 +1,6 @@
 // PlayerContext.jsx
 import React, { createContext, useState, useContext, useEffect } from "react";
-import useSpotifyAuth from "./useSpotifyAuth";
+import useSpotifyAuth from "./useSpotifyAuth.jsx";
 import axios from 'axios';
 
 const Player = createContext();

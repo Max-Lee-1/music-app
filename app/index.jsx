@@ -14,7 +14,7 @@ import Loop from "../assets/icons_ver_1_png/Loop.png";
 import SearchModal from './search.jsx';
 import UserModal from './user.jsx';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import useSpotifyAuth from './useSpotifyAuth';
+import useSpotifyAuth from './useSpotifyAuth.jsx';
 import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
 import { SafeAreaView } from 'react-native-safe-area-context';

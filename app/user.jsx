@@ -4,7 +4,7 @@ import "../constants/styles.css";
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, Pressable, Button, ActivityIndicator } from 'react-native';
 import { useRouter, Link, router } from 'expo-router';
 import Delete from "../assets/icons_ver_2_png/Delete.png";
-import useSpotifyAuth from './useSpotifyAuth';
+import useSpotifyAuth from './useSpotifyAuth.jsx';
 
 const UserModal = ({ visible, onClose }) => {
     const { logout, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();

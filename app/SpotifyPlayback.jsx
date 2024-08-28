@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { usePlayer } from "./PlayerContext";
-import useSpotifyAuth from "./useSpotifyAuth";
+import useSpotifyAuth from "./useSpotifyAuth.jsx";
 import axios from 'axios';
 import Shuffle from "../assets/icons_ver_2_png/Shuffle.png";
 import Arrow from "../assets/icons_ver_2_png/Arrows.png";

@@ -164,7 +164,7 @@ const useSpotifyAuth = () => {
     try {
       const response = await axios({
         method: "get",
-        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

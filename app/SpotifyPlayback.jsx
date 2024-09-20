@@ -1,6 +1,6 @@
 // SpotifyPlayback.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Linking } from 'react-native';
 import { usePlayer } from "./PlayerContext";
 import useSpotifyAuth from "./useSpotifyAuth.jsx";
 import axios from 'axios';
@@ -10,6 +10,7 @@ import Pause from "../assets/icons_ver_2_png/Pause.png";
 import Play from "../assets/icons_ver_2_png/Play.png";
 import Loop from "../assets/icons_ver_2_png/Loop.png";
 import AudioVisualizer from './AudioVisualizer';
+import SpotifyIcon from '../assets/2024-spotify-logo-icon/Primary_Logo_Green_RGB.svg'
 
 // Main SpotifyPlayback component
 export default function SpotifyPlayback() {
@@ -24,6 +25,8 @@ export default function SpotifyPlayback() {
   const [deviceId, setDeviceId] = useState(null);
   const [isShuffling, setIsShuffling] = useState(false);
   const [repeatMode, setRepeatMode] = useState(0);
+  const [isSpotifyInstalled, setIsSpotifyInstalled] = useState(false);
+
 
   // Audio context and analyser refs
   const audioContext = useRef(null);
@@ -163,6 +166,37 @@ export default function SpotifyPlayback() {
     };
   }, [audioContext, analyser, audioSource]);**/
 
+  // 4th useEffect: Check if Spotify is installed
+  useEffect(() => {
+    const checkSpotifyInstallation = async () => {
+      const canOpenSpotify = await Linking.canOpenURL('spotify:');
+      setIsSpotifyInstalled(canOpenSpotify);
+    };
+    checkSpotifyInstallation();
+  }, []);
+
+  // Function to open Spotify or redirect to app store
+  const openSpotify = async () => {
+    if (!currentTrack) return;
+
+    const spotifyURI = currentTrack.uri;
+    const spotifyURL = `https://open.spotify.com/track/${currentTrack.id}`;
+
+    if (isSpotifyInstalled) {
+      await Linking.openURL(spotifyURI);
+    } else {
+      // Redirect to app store if Spotify is not installed
+      if (Platform.OS === 'ios') {
+        await Linking.openURL('https://apps.apple.com/app/spotify-music-and-podcasts/id324684580');
+      } else if (Platform.OS === 'android') {
+        await Linking.openURL('https://play.google.com/store/apps/details?id=com.spotify.music');
+      } else {
+        // For web, open the Spotify web player
+        await Linking.openURL(spotifyURL);
+      }
+    }
+  };
+
   const handleTogglePlayPause = async () => {
     if (!player) return;
     try {
@@ -242,7 +276,7 @@ export default function SpotifyPlayback() {
         token={token}
       />
       <View className="w-full pb-[5vh] px-[4vw]">
-        <View className="items-end justify-end ">
+        <View className="items-end justify-end">
           <View className="flex-row items-start justify-between">
             <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
               <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
@@ -255,14 +289,22 @@ export default function SpotifyPlayback() {
             </TouchableOpacity>
           </View>
         </View>
-        <View className="items-start self-center justify-end w-full ">
-
-          <Text style={{ color: "#F2F2F2" }}>Now Playing:</Text>
+        <View className="items-start self-center justify-end w-full">
+          <Text className="font-sans text-lg" style={{ color: "#F2F2F2" }}>Now Playing:</Text>
           {currentTrack && (
-            <Text style={{ color: "#F2F2F2" }}>{currentTrack.name} by {currentTrack.artists[0].name}</Text>
+            <View>
+              <Text className="font-sans text-lg" style={{ color: "#F2F2F2" }}>{currentTrack.name} by {currentTrack.artists[0].name}</Text>
+              <TouchableOpacity onPress={openSpotify}>
+                <View className="flex-row">
+                  <Image source={SpotifyIcon} className="mr-4" style={{ width: 28, height: 28, minWidth: '21px', minHeight: '21px' }} />
+                  <Text className="font-sans text-base font-medium text-center" style={{ color: "#1DB954", marginTop: 5 }}>
+                    {isSpotifyInstalled ? "PLAY ON SPOTIFY" : "GET SPOTIFY FREE"}
+                  </Text></View>
+
+              </TouchableOpacity>
+            </View>
           )}
         </View>
-
       </View>
     </View>
   );

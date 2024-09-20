@@ -1,19 +1,11 @@
 // index.jsx
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from "expo-status-bar";
-import { ImageBackground, Text, View, Image, TouchableOpacity } from "react-native";
-import { Link, router, Redirect } from "expo-router";
-import "../constants/styles.css";
-import gradientDemo from "../assets/images/gradient-demo.png";
-import Setting from "../assets/icons_ver_1_png/setting.png"
+import { View, Image, TouchableOpacity } from "react-native";
 import List from "../assets/icons_ver_2_png/List.png"
-import Shuffle from "../assets/icons_ver_1_png/Shuffle.png";
-import Arrow from "../assets/icons_ver_1_png/Arrows.png";
-import Pause from "../assets/icons_ver_1_png/Pause.png";
-import Loop from "../assets/icons_ver_1_png/Loop.png";
-import SearchModal from './search.jsx';
-import UserModal from './user.jsx';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import "../constants/styles.css"; // NativeWind Config
+import UserModal from './user.jsx'; // Modal Page
+import SearchModal from './search';
 import useSpotifyAuth from './useSpotifyAuth.jsx';
 import { PlayerContext } from './PlayerContext';
 import SpotifyPlayback from './SpotifyPlayback';
@@ -22,22 +14,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function App() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [userModalVisible, setUserModalVisible] = useState(false);
-  const { token, userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
-  console.log("index" + userProfile);
-  const [playingTrack, setPlayingTrack] = useState();
-  const [trackUri, setTrackUri] = useState(null);
+  const { userProfile, loadToken, loadUserProfile } = useSpotifyAuth();
 
+  // Loading Successful Token and related details from Spotify API
   useEffect(() => {
     loadToken();
     loadUserProfile();
   }, []);
 
-  /**<ImageBackground
-          source={gradientDemo}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode='cover'
-        > 
-        */
   return (
     <>
       <PlayerContext >

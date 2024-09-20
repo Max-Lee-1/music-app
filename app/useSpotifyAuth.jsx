@@ -1,16 +1,20 @@
 // useSpotifyAuth.jsx
+
+// Import dependencies
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
 
+// Initialize Supabase client
 const supabase = createClient(
   "https://jbeycklmkrjxlttwtmkb.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZXlja2xta3JqeGx0dHd0bWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5OTQ3MjAsImV4cCI6MjAzODU3MDcyMH0.xix1tPCFdcPXCkmvrFANHKSNXWetWEzJBnqpQ9sDtoQ"
 );
 
 const useSpotifyAuth = () => {
+  // State variables for managing authentication and user data
   const [token, setToken] = useState(null);
   const [tokenExpiration, setTokenExpiration] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -18,6 +22,7 @@ const useSpotifyAuth = () => {
   const [playlistTracks, setPlaylistTracks] = useState([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
 
+  // Load initial data from Spotify API
   useEffect(() => {
     const loadData = async () => {
       await loadToken();
@@ -26,6 +31,7 @@ const useSpotifyAuth = () => {
     loadData();
   }, []);
 
+  // Handle token expiration and unauthorized requests
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (response) => response,
@@ -42,18 +48,20 @@ const useSpotifyAuth = () => {
     };
   }, []);
 
+  // Check token expiration periodically
   useEffect(() => {
     if (token && tokenExpiration) {
       const checkTokenExpiration = setInterval(() => {
         if (Date.now() >= tokenExpiration) {
           logout();
         }
-      }, 60000); // 60000 = per min
+      }, 60000); // 60000 = Check every minute
 
       return () => clearInterval(checkTokenExpiration);
     }
   }, [token, tokenExpiration]);
 
+  // Load the stored token
   const loadToken = async () => {
     console.log("Initiate loadtoken");
 
@@ -76,6 +84,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Load the user profile from storage
   const loadUserProfile = async () => {
     console.log("Initiate load user profile");
 
@@ -95,6 +104,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Fetch and save user profile
   const fetchAndSaveUserProfile = async (accessToken) => {
     try {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -112,6 +122,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Handle user logout
   const logout = async () => {
     console.log("Running Lougout()");
     try {
@@ -127,6 +138,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Get user playlists
   const getUserPlaylists = async () => {
     console.log("running getUserPlaylist");
     try {
@@ -157,6 +169,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Get tracks for a specific playlist
   const getPlaylistTracks = async (playlistId) => {
     const accessToken = await AsyncStorage.getItem("token");
     console.log("running getPlaylistTracks for playlist:", playlistId);
@@ -179,6 +192,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Handle login and save user data
   const loginAndSaveUser = async (spotifyToken, spotifyProfile, expiresIn) => {
     console.log("Attempting to save user. Token:", !!spotifyToken);
     console.log("Spotify Profile:", spotifyProfile);
@@ -201,7 +215,7 @@ const useSpotifyAuth = () => {
       {
         spotify_id: spotifyProfile.id,
         email: spotifyProfile.email,
-        role: "admin", // Default role
+        role: "admin", // Default role - either "admin" or "student"
       },
       { onConflict: "spotify_id" }
     );
@@ -217,6 +231,7 @@ const useSpotifyAuth = () => {
     return await checkUserRole(spotifyProfile);
   };
 
+  // Check user role
   const checkUserRole = async (spotifyProfile) => {
     if (!spotifyProfile.id) {
       console.log("spotify id: " + spotifyProfile.id);
@@ -249,6 +264,7 @@ const useSpotifyAuth = () => {
     }
   };
 
+  // Return the hook's functions and state
   return {
     token,
     userProfile,

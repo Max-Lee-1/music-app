@@ -37,16 +37,16 @@ const SearchModal = ({ visible, onClose }) => {
 
     const renderTrackItem = ({ item }) => (
         <TouchableOpacity className="flex flex-row items-center justify-between p-2 px-[2vw] border-b border-gray-700">
-            <Text className="flex-1 mr-2 text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
+            <Text className="flex-1 mr-2 font-sans text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
             <TouchableOpacity onPress={() => addToQueue(item)} className="px-2 py-1 bg-gray-700 rounded">
-                <Text className="text-xs text-white">Add</Text>
+                <Text className="font-sans text-xs text-white">Add</Text>
             </TouchableOpacity>
         </TouchableOpacity>
     );
 
     const renderQueueItem = ({ item, index }) => (
         <View className="flex flex-row items-center justify-between p-1 px-[2vw] border-b border-gray-700">
-            <Text className="flex-1 mr-2 text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
+            <Text className="flex-1 mr-2 font-sans text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
             <View className="flex flex-row">
                 <TouchableOpacity onPress={() => currentTrack?.id === item.id ? togglePlayPause() : playTrack(item, index)} className="mr-2">
                     <Image
@@ -78,19 +78,33 @@ const SearchModal = ({ visible, onClose }) => {
 
         const numColumns = getNumColumns(window.width);
 
-        const renderPlaylistItem = ({ item }) => (
-            <View className={`flex-1 m-1 ${numColumns > 2 ? 'max-w-[33%]' : 'max-w-[50%]'} `}>
-                <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="p-2 aspect-square">
-                    {item.images && item.images.length > 0 && (
-                        <Image
-                            source={{ uri: item.images[0].url }}
-                            className="w-full h-full rounded-lg"
-                        />
-                    )}
-                </TouchableOpacity>
-                <Text className="font-semibold text-center truncate" style={{ color: "#F2F2F2" }}>{item.name}</Text>
-            </View>
-        );
+        const calculateBorderRadius = (height) => {
+            const radius = Math.round(height * 0.025);
+            return Math.max(4, radius);
+        };
+
+        const renderPlaylistItem = ({ item }) => {
+            const imageSize = window.width / numColumns - 16; // Subtracting padding
+            const borderRadius = calculateBorderRadius(imageSize);
+
+            return (
+                <View className={`flex-1 m-1 ${numColumns > 2 ? 'max-w-[33%]' : 'max-w-[50%]'} `}>
+                    <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="p-2 aspect-square">
+                        {item.images && item.images.length > 0 && (
+                            <Image
+                                source={{ uri: item.images[0].url }}
+                                style={{
+                                    width: imageSize,
+                                    height: imageSize,
+                                    borderRadius: borderRadius,
+                                }}
+                            />
+                        )}
+                    </TouchableOpacity>
+                    <Text className="pt-2 font-sans font-medium text-center truncate" style={{ color: "#F2F2F2" }}>{item.name}</Text>
+                </View>
+            );
+        };
 
         return (
             <View className="flex-1">
@@ -120,13 +134,13 @@ const SearchModal = ({ visible, onClose }) => {
 
                 />
             ) : (
-                <Text className="mt-4 text-center " style={{ color: "#F2F2F2" }}>Select a playlist to view tracks</Text>
+                <Text className="mt-4 font-sans text-center " style={{ color: "#F2F2F2" }}>Select a playlist to view tracks</Text>
             )}
         </View>
     );
 
     const QueueScreen = () => (
-        <View className="flex-1" style={{ backgroundColor: "#111111" }}
+        <View className="flex-1 px-4" style={{ backgroundColor: "#111111" }}
         >
             {queue && queue.length > 0 ? (
                 <FlatList
@@ -138,7 +152,7 @@ const SearchModal = ({ visible, onClose }) => {
 
                 />
             ) : (
-                <Text className="mt-4 text-center text-white">Queue is empty</Text>
+                <Text className="mt-4 text-center text-white fonts-sans">Queue is empty</Text>
             )}
         </View>
     );
@@ -165,7 +179,6 @@ const SearchModal = ({ visible, onClose }) => {
                             tabBarInactiveTintColor: '#B3B3B3',
                             tabBarIndicatorStyle: { backgroundColor: '#F2F2F2' },
                             tabBarLabelStyle: { fontWeight: 'bold' },
-
                         }}
                     >
                         <Tab.Screen options={{

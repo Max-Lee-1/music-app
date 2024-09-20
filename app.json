@@ -25,13 +25,14 @@
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-   "plugins": [
-    [
-      "expo-router",
-      {
-        "asyncRoutes": "development"
-      }
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "asyncRoutes": "development"
+        }
+      ],
+      "expo-font"
     ]
-  ]
   }
 }

@@ -46,7 +46,7 @@ const discovery = {
 
 export default function LoginScreen() {
   const [userData, setUserData] = useState(null);
-  const { token, userProfile, loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
+  const { loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
   const [request, response, promptAsync] = useAuthRequest(
     {
       responseType: 'code',
@@ -80,8 +80,8 @@ export default function LoginScreen() {
   }, [response]);
 
 
+  // Getting and saving access token
   async function exchangeCodeForToken(code) {
-    console.log("Initiate Exchange Code");
     try {
       const tokenResult = await AuthSession.exchangeCodeAsync(
         {

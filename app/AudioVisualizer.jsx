@@ -1,4 +1,6 @@
 // AudioVisualizer.jsx
+
+// Import dependencies
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import axios from 'axios';
@@ -21,6 +23,7 @@ function modulate(val, minVal, maxVal, outMin, outMax) {
     return outMin + (fr * delta);
 }
 
+// Main AudioVisualizer component
 export default function AudioVisualizer({ audioContext, analyser, trackId, isPlaying, token }) {
     // Refs for Three.js objects
     const containerRef = useRef(null);
@@ -30,6 +33,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const sphereRef = useRef(null);
     const lightRef = useRef(null);
 
+    // State variables for audio analysis and visualization
     const [audioFeatures, setAudioFeatures] = useState(null);
     const [segments, setSegments] = useState([]);
     const currentSegmentIndex = useRef(0);
@@ -41,19 +45,20 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const loudnessBuffer = useRef([]);
     const BUFFER_SIZE = 7500; // Adjust this value to control the smoothing period
 
-    // Buffers for different variables
+    // Buffers for different variables (unused)
     const brightnessBuffer = useRef([]);
     const attackBuffer = useRef([]);
     const [bassLoudness, setBassLoudness] = useState(0);
 
+    // Fetch Spotify audio analysis when trackId changes
     useEffect(() => {
-        // Fetch Spotify audio analysis when trackId changes
         if (trackId && token) {
             console.log(trackId);
             fetchSpotifyAudioAnalysis(trackId, token);
         }
     }, [trackId, token]);
 
+    // Fetch Spotify audio analysis
     const fetchSpotifyAudioAnalysis = async (trackId, token) => {
         try {
             const response = await axios.get(
@@ -77,6 +82,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         }
     };
 
+    // Set up Three.js scene
     useEffect(() => {
         if (!containerRef.current) {
             console.error("Container ref is null.");
@@ -142,12 +148,13 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         };
     }, []);
 
+    // Animation and audio visualization
     useEffect(() => {
         if (!audioContext || !analyser || !trackId || !isPlaying) return;
 
         let animationFrameId;
         let lastUpdateTime = 0;
-        const updateInterval = 32; //At 16 - update every 16ms (approx. 60fps)
+        const updateInterval = 32; // Update every 32ms (approx. 30fps)
 
         const animate = () => {
             if (!isPlaying || segments.length === 0) return;
@@ -162,6 +169,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                     currentSegmentIndex.current = (currentSegmentIndex.current + 1) % segments.length;
                 }
 
+                // Extract audio features from the current segment
                 const timbre = currentSegment ? currentSegment.timbre : [];
                 const loudness = currentSegment ? currentSegment.loudness_start : 0;
                 const timbreLoudness = timbre[0];
@@ -177,7 +185,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                 const bassFactor = 1 - (centroid + rolloff) * 0.5; // Adjust this factor as needed
                 const bassLoudness = timbreLoudness * bassFactor;
                 setBassLoudness(bassLoudness);
-
 
                 // Update loudness buffer
                 loudnessBuffer.current.push(loudness);
@@ -195,10 +202,9 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                     sphereRef.current.rotation.y += 0.003;
                     sphereRef.current.rotation.z += 0.005;
 
-                    // Warp the sphere based on loudness, brightness, and attack
+                    // Warp the sphere based on audio features
                     warpSphere(sphereRef.current, loudness, brightness, flatness, attack, bassLoudness, centroid);
-                    // Update light based on attack
-                    // updateLight(lightRef.current, attack);
+                    // Update glow based on brightness
                     updateGlow(sphereRef.current, brightness);
                 }
 
@@ -213,14 +219,14 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
         animate();
 
+        // Cleanup function
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
-    }, [audioContext, analyser, isPlaying, trackId, segments, startTime, , smoothedBrightness, smoothedAttack]);
+    }, [audioContext, analyser, isPlaying, trackId, segments, startTime, smoothedBrightness, smoothedAttack]);
 
+    // Warp the sphere based on audio features
     function warpSphere(mesh, loudness, brightness, flatness, attack, bassLoudness, centroid) {
-        //console.log('Warping sphere with loudness:', averageLoudness, 'brightness:', brightness, 'and attack:', attack);
-
         if (!mesh.geometry.isBufferGeometry) {
             console.error("Expected BufferGeometry");
             return;
@@ -231,10 +237,10 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
 
         // Modify scale sensitivity to loudness
         const globalScale = modulate(loudness, -30, 0, 2, 2.5); // The sphere gets larger with higher loudness
-        const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0.5, 1); // Use absolute value for brightness
+        /* const brightnessImpact = modulate(Math.abs(brightness), 0, 1, 0.5, 1); // Use absolute value for brightness
         const flatnessImpact = modulate(Math.abs(flatness), 0, 1, 0, 0.1); // Use absolute value
         const attackImpact = modulate(Math.abs(attack), 0, 1, 0.5, 1);       // Use absolute value for attack
-        const time = window.performance.now();
+        const time = window.performance.now(); */
         const rf = 0.00001; // Frequency of noise over time
         const amp = 2.5; // Amplitude of the noise
 
@@ -250,9 +256,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             // Add brightness-based jaggedness
             distance += (noise3D(vertex.x * 1.5, vertex.y * 1.5, vertex.z * 1.5) * ((centroid + attack) * 0.5)) * Math.PI * amp;
 
-            // Add attack-based ripple effect
-            //distance += attackImpact * Math.sin( time * rf * 500 + vertex.length() * Math.PI);
-
             // Update vertex position
             vertex.multiplyScalar(distance);
 
@@ -263,6 +266,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         mesh.geometry.computeVertexNormals();
     }
 
+    // Update light based on brightness (currently unused)
     function updateLight(light, brightness) {
         if (!light) return;
 
@@ -275,8 +279,10 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         light.color.setHSL(colorValue, 1, 0.5);
     }
 
+    // Variable to store current color for smooth transitions
     let currentColor = new THREE.Color(0.5, 0.5, 0.5);
 
+    // Update the glow effect based on brightness
     function updateGlow(mesh, brightness) {
         if (!mesh || !mesh.material) return;
 
@@ -295,5 +301,6 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         mesh.material.emissive.copy(currentColor);
     }
 
+    // Render the container for the Three.js scene
     return <View ref={containerRef} style={{ position: "fixed", top: "0", background: "none" }} />;
 }

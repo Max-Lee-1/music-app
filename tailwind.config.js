@@ -1,3 +1,4 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -7,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {},
+    fontFamily: {
+      sans: ["System", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+    },
   },
   plugins: [],
 };

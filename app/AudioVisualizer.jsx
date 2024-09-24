@@ -2,7 +2,7 @@
 
 // Import dependencies
 import React, { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import axios from 'axios';
 import * as THREE from 'three';
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise";
@@ -44,6 +44,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     const [averageLoudness, setAverageLoudness] = useState(0);
     const loudnessBuffer = useRef([]);
     const BUFFER_SIZE = 7500; // Adjust this value to control the smoothing period
+    const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
 
     // Buffers for different variables (unused)
     const brightnessBuffer = useRef([]);
@@ -53,7 +54,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
     // Fetch Spotify audio analysis when trackId changes
     useEffect(() => {
         if (trackId && token) {
-            console.log(trackId);
+            //console.log(trackId);
             fetchSpotifyAudioAnalysis(trackId, token);
         }
     }, [trackId, token]);
@@ -73,8 +74,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
             setSegments(analysis.segments || []);
             setStartTime(Date.now());
 
-            console.log("Tempo:", analysis.track.tempo);
-            console.log("Audio Features:", analysis.track);
+            //console.log("Tempo:", analysis.track.tempo);
+            //console.log("Audio Features:", analysis.track);
         } catch (error) {
             console.error("Error fetching Spotify audio analysis:", error);
             setAudioFeatures(null);
@@ -108,7 +109,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         }
 
         // Create sphere geometry and material
-        const geometry = new THREE.IcosahedronGeometry(15, 25);
+
+        const geometry = new THREE.IcosahedronGeometry(15, 25); //9,15
         const material = new THREE.MeshLambertMaterial({
             color: "#696969",
             wireframe: true,
@@ -179,7 +181,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                 const centroid = timbre[4] / 100;     // Normalize specteral centroid feature
                 const rolloff = timbre[11] / 100; // Assuming dimension 11 corresponds to spectral rolloff
 
-                console.log(brightness);
+                //console.log(brightness);
 
                 // Calculate bass loudness
                 const bassFactor = 1 - (centroid + rolloff) * 0.5; // Adjust this factor as needed

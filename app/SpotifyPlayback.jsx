@@ -10,7 +10,7 @@ import Pause from "../assets/icons_ver_2_png/Pause.png";
 import Play from "../assets/icons_ver_2_png/Play.png";
 import Loop from "../assets/icons_ver_2_png/Loop.png";
 import AudioVisualizer from './AudioVisualizer';
-import SpotifyIcon from '../assets/2024-spotify-logo-icon/Primary_Logo_Green_RGB.svg'
+import SpotifyIcon from '../assets/2024-spotify-logo-icon/Primary_Logo_Black_RGB.svg'
 
 // Main SpotifyPlayback component
 export default function SpotifyPlayback() {
@@ -275,45 +275,47 @@ export default function SpotifyPlayback() {
         isPlaying={isPlaying}
         token={token}
       />
-      <View className="w-full pb-[5vh] px-[4vw]">
-        <View className="items-end justify-end">
-          <View className="flex-row items-start justify-between">
-            <TouchableOpacity className="mx-3" onPress={handlePreviousTrack}>
+      <View className="w-full pb-[5vh] md:px-[4vw] px-[10vw]">
+        <View className="flex-row items-center justify-between">
+          <View className="items-start">
+            <Text className="font-sans text-base md:text-lg" style={{ color: "#D2D2D2" }}>Now Playing:</Text>
+            {currentTrack && (
+              <View>
+                <Text className="font-sans text-base break-words md:text-lg max-w-[50vw] pb-1 md:pb-2" style={{ color: "#F2F2F2" }}>{currentTrack.name} by {currentTrack.artists[0].name}</Text>
+                <TouchableOpacity onPress={openSpotify} className="opacity-100 hover:opacity-50">
+                  <View className="flex-row p-1 px-2 rounded-2xl" style={{ backgroundColor: "#1DB954" }}>
+                    <Image source={SpotifyIcon} className="mr-1 md:mr-4" style={{ width: 28, height: 28, minWidth: '21px', minHeight: '21px' }} />
+                    <Text className="self-center font-sans text-sm font-semibold text-black md:text-base">
+                      {isSpotifyInstalled ? "PLAY ON SPOTIFY" : "GET SPOTIFY FREE"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          <View className="flex-row items-center">
+            <TouchableOpacity className="mr-2 opacity-100 md:mr-3 hover:opacity-50" onPress={handlePreviousTrack}>
               <Image source={Arrow} style={{ width: 28, height: 28, transform: [{ rotate: '180deg' }] }} />
             </TouchableOpacity>
-            <TouchableOpacity className="mx-3" onPress={handleTogglePlayPause}>
+            <TouchableOpacity className="mx-2 opacity-100 md:mx-3 hover:opacity-50" onPress={handleTogglePlayPause}>
               <Image source={isPlaying ? Pause : Play} style={{ width: 28, height: 28 }} />
             </TouchableOpacity>
-            <TouchableOpacity className="mx-3" onPress={handleNextTrack}>
+            <TouchableOpacity className="ml-2 opacity-100 md:ml-3 hover:opacity-50" onPress={handleNextTrack}>
               <Image source={Arrow} style={{ width: 28, height: 28 }} />
             </TouchableOpacity>
           </View>
-        </View>
-        <View className="items-start self-center justify-end w-full">
-          <Text className="font-sans text-lg" style={{ color: "#F2F2F2" }}>Now Playing:</Text>
-          {currentTrack && (
-            <View>
-              <Text className="font-sans text-lg" style={{ color: "#F2F2F2" }}>{currentTrack.name} by {currentTrack.artists[0].name}</Text>
-              <TouchableOpacity onPress={openSpotify}>
-                <View className="flex-row">
-                  <Image source={SpotifyIcon} className="mr-4" style={{ width: 28, height: 28, minWidth: '21px', minHeight: '21px' }} />
-                  <Text className="font-sans text-base font-medium text-center" style={{ color: "#1DB954", marginTop: 5 }}>
-                    {isSpotifyInstalled ? "PLAY ON SPOTIFY" : "GET SPOTIFY FREE"}
-                  </Text></View>
 
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
       </View>
     </View>
   );
   /**<TouchableOpacity className="mr-3" onPress={handleToggleShuffle}>
-              <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
-            </TouchableOpacity>
+        <Image source={Shuffle} style={{ width: 28, height: 28, opacity: isShuffling ? 1 : 0.5 }} />
+      </TouchableOpacity>
 
-            <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
-              <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
-            </TouchableOpacity>
-             */
+      <TouchableOpacity className="ml-3" onPress={handleToggleRepeat}>
+        <Image source={Loop} style={{ width: 28, height: 28, opacity: repeatMode === 0 ? 0.5 : 1 }} />
+      </TouchableOpacity>
+      */
 }

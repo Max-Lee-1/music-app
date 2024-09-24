@@ -36,30 +36,30 @@ const SearchModal = ({ visible, onClose }) => {
     };
 
     const renderTrackItem = ({ item }) => (
-        <TouchableOpacity className="flex flex-row items-center justify-between p-2 px-[2vw] border-b border-gray-700">
+        <TouchableOpacity className="flex flex-row items-center justify-between p-2 px-[2vw] border-b border-gray-700 ">
             <Text className="flex-1 mr-2 font-sans text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
-            <TouchableOpacity onPress={() => addToQueue(item)} className="px-2 py-1 bg-gray-700 rounded">
+            <TouchableOpacity onPress={() => addToQueue(item)} className="px-2 py-1 bg-gray-700 rounded opacity-100 hover:opacity-50">
                 <Text className="font-sans text-xs text-white">Add</Text>
             </TouchableOpacity>
         </TouchableOpacity>
     );
 
     const renderQueueItem = ({ item, index }) => (
-        <View className="flex flex-row items-center justify-between p-1 px-[2vw] border-b border-gray-700">
+        <View className="flex flex-row items-center justify-between p-3 px-[2vw] border-b border-gray-700">
             <Text className="flex-1 mr-2 font-sans text-white truncate">{item.name} - {item.artists.map(artist => artist.name).join(', ')}</Text>
             <View className="flex flex-row">
-                <TouchableOpacity onPress={() => currentTrack?.id === item.id ? togglePlayPause() : playTrack(item, index)} className="mr-2">
+                <TouchableOpacity onPress={() => currentTrack?.id === item.id ? togglePlayPause() : playTrack(item, index)} className="items-center mr-2 opacity-100 hover:opacity-50">
                     <Image
                         source={currentTrack?.id === item.id && isPlaying ? Pause : Play}
                         className=""
-                        style={{ width: '2rem', height: '2rem' }}
+                        style={{ width: '1.25rem', height: '1.25rem' }}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => removeFromQueue(index)}>
+                <TouchableOpacity onPress={() => removeFromQueue(index)} className="items-center self-center opacity-100 hover:opacity-50">
                     <Image
                         source={Delete}
                         className=""
-                        style={{ width: '2rem', height: '2rem' }}
+                        style={{ width: '1.25rem', height: '1.25rem' }}
                     />
                 </TouchableOpacity>
             </View>
@@ -72,8 +72,7 @@ const SearchModal = ({ visible, onClose }) => {
             if (width >= 1024) return 10; // lg screens
             if (width >= 768) return 6;  // md screens
             if (width >= 640) return 5;  // sm screens
-            if (width >= 480) return 3;  // xs screens
-            return 2; // xxs screens
+            return 3; // xs screens
         };
 
         const numColumns = getNumColumns(window.width);
@@ -89,7 +88,7 @@ const SearchModal = ({ visible, onClose }) => {
 
             return (
                 <View className={`flex-1 m-1 ${numColumns > 2 ? 'max-w-[33%]' : 'max-w-[50%]'} `}>
-                    <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="p-2 aspect-square">
+                    <TouchableOpacity onPress={() => handlePlaylistSelect(item.id)} className="p-2 opacity-100 aspect-square hover:opacity-50">
                         {item.images && item.images.length > 0 && (
                             <Image
                                 source={{ uri: item.images[0].url }}
@@ -165,8 +164,8 @@ const SearchModal = ({ visible, onClose }) => {
             onRequestClose={onClose}
         >
             <View className="flex-1 backdrop-blur-sm">
-                <View className="flex-row justify-end pt-[5vh] px-[4vw]">
-                    <TouchableOpacity onPress={onClose}>
+                <View className="flex-row justify-end pt-[5vh] md:px-[4vw] px-[10vw]">
+                    <TouchableOpacity onPress={onClose} className="opacity-100 hover:opacity-50">
                         <Image source={Delete} style={{ width: '2rem', height: '2rem' }} />
                     </TouchableOpacity>
                 </View>

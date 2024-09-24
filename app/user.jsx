@@ -28,38 +28,37 @@ const UserModal = ({ visible, onClose }) => {
             onRequestClose={onClose}
             id="user"
         >
-            <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }} className="flex-column w-1/3 mt-4 ml-8 p-10 rounded-lg max-h-[50vh] backdrop-blur-md">
+            <View style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)' }} className="flex-column md:w-1/3 w-2/3 mt-4 ml-8 md:p-5 p-2 pt-4 rounded-lg max-h-[50vh] backdrop-blur-md">
                 {loading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
                     <>
                         <View className="flex-row items-start justify-between">
-                            <View className="flex-row items-start justify-evenly">
-                                {userProfile && userProfile.images && userProfile.images[0] ? (
-                                    <TouchableOpacity onPress={onClose}>
-                                        <Image
-                                            source={{ uri: userProfile.images[0].url }}
-                                            className="self-center"
-                                            style={{ width: 32, height: 32, borderRadius: 16 }}
-                                        />
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity onPress={onClose}>
-                                        <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} onPress={onClose} />
-                                    </TouchableOpacity>
-                                )}
-                                <Text className="self-center pl-4 text-xl font-bold" style={{ color: "#F2F2F2" }}>
-                                    Hi, {userProfile && userProfile.display_name ? userProfile.display_name : 'User'}!
-                                </Text>
-                            </View>
-
-                            <TouchableOpacity onPress={onClose} className="items-end self-center">
+                            {userProfile && userProfile.images && userProfile.images[0] ? (
+                                <TouchableOpacity onPress={onClose} className="order-1 opacity-100 hover:opacity-50">
+                                    <Image
+                                        source={{ uri: userProfile.images[0].url }}
+                                        className="self-center"
+                                        style={{ width: 32, height: 32, borderRadius: 16 }}
+                                    />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity onPress={onClose} className="order-1 opacity-100 hover:opacity-50">
+                                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} onPress={onClose} />
+                                </TouchableOpacity>
+                            )}
+                            <Text className="self-center order-2 pl-4 text-xl font-bold" style={{ color: "#F2F2F2" }}>
+                                Hi, {userProfile && userProfile.display_name ? userProfile.display_name : 'User'}!
+                            </Text>
+                            <TouchableOpacity onPress={onClose} className="items-end order-3 opacity-100 hover:opacity-50">
                                 <Image source={Delete} style={{ width: '1.75rem', height: '1.75rem' }} />
                             </TouchableOpacity>
+
+
                         </View>
                         <span className='h-10' />
                         <View className="flex-row items-end self-end" >
-                            <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg' style={{ backgroundColor: "#222222" }}>Logout</TouchableOpacity>
+                            <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg opacity-100 hover:opacity-50' style={{ backgroundColor: "#222222" }}>Logout</TouchableOpacity>
                         </View>
                     </>
                 )}

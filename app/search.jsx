@@ -84,7 +84,7 @@ const SearchModal = ({ visible, onClose }) => {
 
         const renderPlaylistItem = ({ item }) => {
             const imageSize = window.width / numColumns - 16; // Subtracting padding
-            const borderRadius = calculateBorderRadius(imageSize);
+            const borderRadius = window.width >= 1024 ? 4 : 2;
 
             return (
                 <View className={`flex-1 m-1 ${numColumns > 2 ? 'max-w-[33%]' : 'max-w-[50%]'} `}>

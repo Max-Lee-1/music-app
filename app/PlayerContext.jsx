@@ -23,8 +23,22 @@ const PlayerContext = ({ children }) => {
         setIsPlaying(false);
     };
 
-    const togglePlayPause = () => {
-        setIsPlaying(!isPlaying);
+    const togglePlayPause = async () => {
+        try {
+            await axios.put(
+                `https://api.spotify.com/v1/me/player/${isPlaying ? 'pause' : 'play'}?device_id=${deviceId}`,
+                {},
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+            setIsPlaying(!isPlaying);
+            if (!isPlaying) {
+                audioContext.current.resume();
+            } else {
+                audioContext.current.suspend();
+            }
+        } catch (error) {
+            console.error('Error toggling play/pause:', error);
+        }
     };
 
     useEffect(() => {

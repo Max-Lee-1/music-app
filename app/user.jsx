@@ -58,7 +58,7 @@ const UserModal = ({ visible, onClose }) => {
                         </View>
                         <span className='h-10' />
                         <View className="flex-row items-end self-end" >
-                            <TouchableOpacity onPress={logout} className='p-2 text-red-600 rounded-lg opacity-100 hover:opacity-50' style={{ backgroundColor: "#222222" }}>Logout</TouchableOpacity>
+                            <TouchableOpacity onPress={logout} className='p-2 font-semibold text-black rounded-lg opacity-100 hover:opacity-50 ' style={{ backgroundColor: "#DD0000" }}>Logout</TouchableOpacity>
                         </View>
                     </>
                 )}

@@ -109,8 +109,8 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
         }
 
         // Create sphere geometry and material
-
-        const geometry = new THREE.IcosahedronGeometry(15, 25); //9,15
+        const detailLevel = screenDimensions.width < 1024 ? [9, 15] : [15, 25];
+        const geometry = new THREE.IcosahedronGeometry(...detailLevel);
         const material = new THREE.MeshLambertMaterial({
             color: "#696969",
             wireframe: true,
@@ -148,7 +148,7 @@ export default function AudioVisualizer({ audioContext, analyser, trackId, isPla
                 containerRef.current.removeChild(renderer.domElement);
             }
         };
-    }, []);
+    }, [screenDimensions]);
 
     // Animation and audio visualization
     useEffect(() => {

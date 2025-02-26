@@ -165,12 +165,14 @@ const SearchModal = ({ visible, onClose }) => {
         >
             <View className="flex-1 backdrop-blur-sm">
                 <View className="flex-row justify-end pt-[5vh] md:px-[4vw] px-[10vw]">
-                    <TouchableOpacity onPress={onClose} className="opacity-100 hover:opacity-50">
-                        <Image source={Delete} style={{ width: '2rem', height: '2rem' }} />
+                    <TouchableOpacity
+                        onPress={onClose}
+                        className="opacity-100 hover:opacity-50">
+                        <Image source={Delete}
+                            style={{ width: '2rem', height: '2rem' }} />
                     </TouchableOpacity>
                 </View>
-                <NavigationContainer
-                    independent={true}>
+                <NavigationContainer independent={true}>
                     <Tab.Navigator
                         screenOptions={{
                             tabBarStyle: { backgroundColor: 'transparent' },

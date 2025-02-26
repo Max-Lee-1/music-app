@@ -26,10 +26,13 @@ export default function App() {
     <>
       <PlayerContext >
         <StatusBar style="light" />
-        <SafeAreaView className="relative flex-1 w-full" style={{ background: "radial-gradient(#333333, #000000)" }} >
+        <SafeAreaView className="relative flex-1 w-full"
+          style={{ background: "radial-gradient(#333333, #000000)" }} >
           <View className="flex-1 pt-[5vh] md:px-[4vw] px-[10vw] z-10">
             <View className="flex-row items-start justify-between">
-              <TouchableOpacity onPress={() => setUserModalVisible(true)} className="opacity-100 hover:opacity-50">
+              <TouchableOpacity
+                onPress={() => setUserModalVisible(true)}
+                className="opacity-100 hover:opacity-50">
                 {userProfile && userProfile.images && userProfile.images[0] ? (
                   <Image
                     source={{ uri: userProfile.images[0].url }}
@@ -37,7 +40,11 @@ export default function App() {
                     style={{ width: 32, height: 32, borderRadius: 16 }}
                   />
                 ) : (
-                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#ccc' }} />
+                  <View style={{
+                    width: 32, height: 32,
+                    borderRadius: 16,
+                    backgroundColor: '#ccc'
+                  }} />
                 )}
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setSearchModalVisible(true)} className="opacity-100 hover:opacity-50">

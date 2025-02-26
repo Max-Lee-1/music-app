@@ -8,10 +8,10 @@ import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
 
 // Initialize Supabase client
-const supabase = createClient(
-  "https://jbeycklmkrjxlttwtmkb.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZXlja2xta3JqeGx0dHd0bWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5OTQ3MjAsImV4cCI6MjAzODU3MDcyMH0.xix1tPCFdcPXCkmvrFANHKSNXWetWEzJBnqpQ9sDtoQ"
-);
+//const supabase = createClient(
+//  "https://jbeycklmkrjxlttwtmkb.supabase.co",
+//  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiZXlja2xta3JqeGx0dHd0bWtiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI5OTQ3MjAsImV4cCI6MjAzODU3MDcyMH0.xix1tPCFdcPXCkmvrFANHKSNXWetWEzJBnqpQ9sDtoQ"
+//);
 
 const useSpotifyAuth = () => {
   // State variables for managing authentication and user data
@@ -163,7 +163,7 @@ const useSpotifyAuth = () => {
       });
       const userPlaylists = response.data;
       setUserPlaylists(userPlaylists);
-      console.log("Playlists fetched:", userPlaylists.items.length);
+      console.log("Playlists fetched:", userPlaylists.items);
     } catch (err) {
       console.log("Error fetching playlists:", err.message);
     }
@@ -186,7 +186,7 @@ const useSpotifyAuth = () => {
       const tracks = response.data.items.map((item) => item.track);
       setPlaylistTracks(tracks);
       setSelectedPlaylistId(playlistId);
-      console.log("Tracks fetched:", tracks.length);
+      //console.log("Tracks fetched:", tracks.length);
     } catch (err) {
       console.log(err.message);
     }
@@ -211,24 +211,24 @@ const useSpotifyAuth = () => {
     await AsyncStorage.setItem("tokenExpiration", expirationTime.toString());
 
     // Save user to supabase
-    const { data, error } = await supabase.from("users").upsert(
-      {
-        spotify_id: spotifyProfile.id,
-        email: spotifyProfile.email,
-        role: "admin", // Default role - either "admin" or "student"
-      },
-      { onConflict: "spotify_id" }
-    );
-
-    if (error) {
-      console.error("Error saving user to Supabase:", error);
-      console.error("Error details:", error.message, error.details);
-    } else if (data) {
-      console.log("User successfully saved to Supabase:", data);
-    }
-
-    // Check and return the user role
-    return await checkUserRole(spotifyProfile);
+    //  const { data, error } = await supabase.from("users").upsert(
+    //    {
+    //      spotify_id: spotifyProfile.id,
+    //      email: spotifyProfile.email,
+    //      role: "admin", // Default role - either "admin" or "student"
+    //    },
+    //    { onConflict: "spotify_id" }
+    //  );
+    //
+    //  if (error) {
+    //    console.error("Error saving user to Supabase:", error);
+    //    console.error("Error details:", error.message, error.details);
+    //  } else if (data) {
+    //    console.log("User successfully saved to Supabase:", data);
+    //  }
+    //
+    //  // Check and return the user role
+    //  return await checkUserRole(spotifyProfile);
   };
 
   // Check user role

@@ -12,15 +12,41 @@ import { makeRedirectUri, useAuthRequest, exchangeCodeAsync } from 'expo-auth-se
 import * as Random from 'expo-random';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useSpotifyAuth from './useSpotifyAuth.jsx';
-
+import Constants from 'expo-constants';
 
 // ensures  any open web browser session is properly closed 
 // and that the authentication flow is completed correctly when the user is redirected back to the app.
 WebBrowser.maybeCompleteAuthSession();
 
+
+const config = {
+  clientId: Constants.expoConfig.extra.spotifyClientId, // Load from app.config.js
+  scopes: [
+    'user-read-private',
+    'user-read-email',
+    'user-library-read',
+    'user-read-recently-played',
+    'user-top-read',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'playlist-modify-public',
+    'user-read-private',
+    'user-read-email',
+    'user-library-read',
+    'user-read-playback-state',
+    'user-modify-playback-state',
+    'streaming',
+    'user-read-currently-playing',],
+  discovery: {
+    authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+    tokenEndpoint: 'https://accounts.spotify.com/api/token',
+  }
+};
+
+
 const clientId = '990510f4dd5f44e399690dfcde5b5828';
-// const redirectUri = "http://localhost:8081/spotify-auth-callback"; //Local
-export const redirectUri = `${AuthSession.makeRedirectUri({ useProxy: true })}/spotify-auth-callback`;
+export const redirectUri =
+  `${AuthSession.makeRedirectUri({ useProxy: true })}/spotify-auth-callback`;
 const scopes = [
   'user-read-private',
   'user-read-email',
@@ -37,7 +63,6 @@ const scopes = [
   'user-modify-playback-state',
   'streaming',
   'user-read-currently-playing',];
-//const CLIENT_SECRET = '44a44a6cf15f49aaba908f71fdd6bb33';
 
 const discovery = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
@@ -46,7 +71,8 @@ const discovery = {
 
 export default function LoginScreen() {
   const [userData, setUserData] = useState(null);
-  const { loadToken, loadUserProfile, fetchAndSaveUserProfile, loginAndSaveUser, checkUserRole } = useSpotifyAuth();
+  const { loadToken, loadUserProfile, fetchAndSaveUserProfile,
+    loginAndSaveUser, checkUserRole } = useSpotifyAuth();
   const [request, response, promptAsync] = useAuthRequest(
     {
       responseType: 'code',
